@@ -184,12 +184,13 @@ def _log_row(data, ts):
 
 def _poll_loop():
     reader = PLCReader()
+    error_count = 0
     while True:
         t0 = time.time()
         try:
             if not reader.client.get_connected():
                 reader.connect()
-            data = reader.read(group="output")  # DB4 Output + DB8 HMD
+            data = reader.read(group="output")
             ts = time.time()
             with _lock:
                 _latest["connected"] = True
@@ -206,8 +207,12 @@ def _poll_loop():
                 _log_row(data, ts)
             except Exception:
                 traceback.print_exc()
+            error_count = 0
         except Exception as exc:
-            traceback.print_exc()
+            error_count += 1
+            # Log only the first few errors, then every 10th to avoid spam
+            if error_count <= 3 or error_count % 10 == 0:
+                print(f"[PLC] Connection failed ({error_count}): {exc}", file=sys.stderr)
             with _lock:
                 _latest["connected"] = False
                 _latest["error"] = str(exc)
@@ -215,9 +220,8 @@ def _poll_loop():
                 mes_set_live({}, connected=False)
             except Exception:
                 pass
-            time.sleep(2)
+            time.sleep(5)  # longer wait before retry
             continue
-        # Keep true 1 s cycle (account for PLC read time)
         elapsed = time.time() - t0
         time.sleep(max(0.05, POLL_INTERVAL_SECONDS - elapsed))
 
