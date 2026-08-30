@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Block Mill Health Card — Sugna Steel</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#e6ebf2;
+  --bg-deep:#d5dde8;
+  --panel:rgba(255,255,255,.72);
+  --surface:#f7f9fc;
+  --elevated:#ffffff;
+  --line:rgba(28,42,64,.12);
+  --line2:rgba(28,42,64,.22);
+  --ink:#121926;
+  --ink2:#3d4b63;
+  --muted:#6b7a92;
+  --ok:#0f7a45;
+  --ok-bg:rgba(15,122,69,.12);
+  --caution:#c45f0a;
+  --caution-bg:rgba(196,95,10,.12);
+  --alarm:#c4182c;
+  --alarm-bg:rgba(196,24,44,.12);
+  --accent:#0b6e6a;
+  --accent-2:#1a5f8f;
+  --steel:#2a3548;
+  --copper:#b86b2a;
+  --glow:rgba(11,110,106,.25);
+  --font:'Outfit',system-ui,sans-serif;
+  --fm:'JetBrains Mono',ui-monospace,monospace;
+  --r:14px;
+  --r-sm:10px;
+  --shadow:0 1px 2px rgba(18,25,38,.04),0 8px 24px rgba(18,25,38,.06);
+  --shadow-lg:0 12px 40px rgba(18,25,38,.12);
+  --focus:0 0 0 3px rgba(11,110,106,.28);
+  --sw:268px;
+  --tb:auto;
+  --ab:44px;
+}
+html[data-theme="dark"]{
+  --bg:#0c1118;
+  --bg-deep:#080c12;
+  --panel:rgba(22,30,42,.88);
+  --surface:#141c28;
+  --elevated:#182232;
+  --line:rgba(180,200,230,.12);
+  --line2:rgba(180,200,230,.22);
+  --ink:#eef3fb;
+  --ink2:#aebcd0;
+  --muted:#8494aa;
+  --steel:#0a0f16;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 28px rgba(0,0,0,.35);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{
+  font-family:var(--font);color:var(--ink);min-height:100vh;line-height:1.45;
+  background:
+    radial-gradient(1200px 600px at 8% -10%, rgba(11,110,106,.18), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(26,95,143,.16), transparent 50%),
+    radial-gradient(700px 400px at 70% 100%, rgba(184,107,42,.10), transparent 45%),
+    linear-gradient(165deg,var(--bg) 0%, var(--bg-deep) 100%);
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+input,select,textarea{
+  width:100%;padding:9px 12px;border:1px solid var(--line2);border-radius:10px;
+  background:var(--elevated);color:var(--ink);outline:none;
+  transition:border .18s,box-shadow .18s,transform .15s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:var(--focus)}
+input[type="number"]{-moz-appearance:textfield}
+input.alarm-val{border-color:var(--alarm);background:var(--alarm-bg);animation:shake .35s ease}
+input.caution-val{border-color:var(--caution);background:var(--caution-bg)}
+input.ok-val{border-color:rgba(15,122,69,.45);background:rgba(15,122,69,.05)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes softGlow{0%,100%{box-shadow:0 0 0 0 rgba(196,24,44,0)}50%{box-shadow:0 0 0 6px rgba(196,24,44,.12)}}
+
+.app{display:grid;grid-template-columns:var(--sw) 1fr;grid-template-rows:auto var(--ab) 1fr;min-height:100vh}
+
+/* ── Top bar ── */
+.topbar{
+  grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:12px 18px;
+  background:linear-gradient(120deg,#102033 0%,#163047 42%,#0f3a3a 100%);
+  color:#eef5fb;position:relative;overflow:visible;flex-wrap:wrap;min-height:72px;
+}
+.topbar::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);
+  transform:translateX(-100%);animation:sheen 7s ease-in-out infinite;
+}
+@keyframes sheen{0%,70%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.logo-mark{
+  width:42px;height:42px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(145deg,#0b6e6a,#1a5f8f);
+  display:grid;place-items:center;font-family:var(--fm);font-weight:700;font-size:13px;
+  box-shadow:0 8px 20px rgba(11,110,106,.35);letter-spacing:-.04em;
+}
+.brand{display:flex;flex-direction:column;min-width:0;flex:1}
+.brand strong{font-size:15px;font-weight:700;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand span{font-size:11px;color:#9eb3c9;font-family:var(--fm);margin-top:2px}
+.meta{display:flex;gap:10px;align-items:flex-end;flex-wrap:nowrap;z-index:2;flex-shrink:0}
+.meta .field{min-width:110px;flex-shrink:0}
+.meta .field-size{min-width:100px;width:110px}
+.meta .field-shift{min-width:200px}
+.meta label{font-size:10px;color:#9eb3c9;font-family:var(--fm);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px}
+.meta input{background:rgba(8,14,22,.45);border-color:rgba(255,255,255,.14);color:#eef5fb;padding:8px 10px;font-family:var(--fm);font-size:12px;backdrop-filter:blur(8px);height:42px}
+
+/* Shift segmented control */
+.shift-toggle{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;height:42px;box-sizing:border-box;
+  background:rgba(8,14,22,.5);border:1px solid rgba(255,255,255,.14);border-radius:12px;min-width:200px;
+}
+.shift-toggle input{display:none}
+.shift-toggle label{
+  text-align:center;padding:0 8px;border-radius:9px;cursor:pointer;
+  font-weight:700;font-size:12px;color:#9eb3c9;transition:all .2s ease;user-select:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;
+}
+.shift-toggle label small{display:block;font-weight:500;font-size:9px;opacity:.75;margin-top:1px;font-family:var(--fm)}
+.shift-toggle input:checked + label{
+  background:linear-gradient(145deg,#0b6e6a,#157a74);color:#fff;
+  box-shadow:0 6px 16px rgba(11,110,106,.35);
+}
+.shift-toggle label:hover{color:#fff}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 14px;border-radius:11px;font-weight:700;font-size:12px;
+  border:1px solid transparent;transition:all .18s ease;z-index:1;white-space:nowrap;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{
+  background:linear-gradient(145deg,#0b6e6a,#0e857f);color:#fff;
+  box-shadow:0 8px 18px rgba(11,110,106,.35);
+}
+.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-ghost{background:rgba(255,255,255,.06);color:#eef5fb;border-color:rgba(255,255,255,.14)}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+.btn-soft{background:var(--elevated);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow)}
+.btn-soft:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:6px 10px;font-size:11px;border-radius:8px}
+
+/* Alarm bar */
+.alarmbar{
+  grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 16px;
+  background:rgba(255,255,255,.55);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);overflow:hidden;
+}
+html[data-theme="dark"] .alarmbar{background:rgba(20,28,40,.75)}
+.alarmbar.silent{opacity:.8}
+.alarm-pill{
+  font-family:var(--fm);font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;
+  border:1px solid var(--line);white-space:nowrap;letter-spacing:.04em;
+}
+.alarm-pill.ok{background:var(--ok-bg);color:var(--ok);border-color:rgba(15,122,69,.25)}
+.alarm-pill.warn{background:var(--caution-bg);color:var(--caution);border-color:rgba(196,95,10,.3)}
+.alarm-pill.crit{background:var(--alarm-bg);color:var(--alarm);border-color:rgba(196,24,44,.35);animation:pulse 1.3s ease-in-out infinite, softGlow 1.6s ease-in-out infinite}
+.alarm-scroll{flex:1;overflow:hidden;white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.alarm-track{display:inline-block;animation:marquee 26s linear infinite;font-family:var(--fm);font-size:12px;color:var(--ink2)}
+.alarm-track span{margin-right:28px}
+.alarm-track .a{color:var(--alarm);font-weight:700}
+.alarm-track .c{color:var(--caution);font-weight:600}
+
+/* Sidebar */
+.side{
+  background:var(--panel);backdrop-filter:blur(18px);border-right:1px solid var(--line);
+  padding:16px 12px;display:flex;flex-direction:column;gap:4px;overflow:auto;
+}
+.side h3{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);padding:2px 10px 10px}
+.nav-btn{
+  text-align:left;padding:11px 12px;border-radius:12px;border:1px solid transparent;
+  color:var(--ink2);font-weight:600;font-size:13px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  transition:all .18s ease;
+}
+.nav-btn .nav-ico{
+  width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
+  background:rgba(11,110,106,.08);color:var(--accent);font-family:var(--fm);font-size:10px;font-weight:700;flex-shrink:0;
+}
+.nav-btn .nav-left{display:flex;align-items:center;gap:10px;min-width:0}
+.nav-btn:hover{background:rgba(11,110,106,.06);border-color:rgba(11,110,106,.15);transform:translateX(2px)}
+.nav-btn.active{
+  background:linear-gradient(135deg,rgba(11,110,106,.14),rgba(26,95,143,.10));
+  border-color:rgba(11,110,106,.28);color:var(--ink);box-shadow:var(--shadow);
+}
+.nav-btn .dot{width:9px;height:9px;border-radius:50%;background:var(--line2);flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+.nav-btn .dot.ok{background:var(--ok);box-shadow:0 0 0 3px rgba(15,122,69,.18)}
+.nav-btn .dot.warn{background:var(--caution);box-shadow:0 0 0 3px rgba(196,95,10,.18)}
+.nav-btn .dot.crit{background:var(--alarm);box-shadow:0 0 0 3px rgba(196,24,44,.2);animation:pulse 1.3s ease-in-out infinite}
+.side-foot{margin-top:auto;padding:12px 10px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);font-family:var(--fm)}
+.folder-ok{color:var(--ok)}
+.folder-miss{color:var(--caution)}
+
+/* Main */
+.main{overflow:auto;padding:18px;display:flex;flex-direction:column;gap:16px}
+.panel{
+  background:var(--panel);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:18px;
+  box-shadow:var(--shadow);overflow:hidden;display:none;animation:rise .35s ease;
+}
+.panel.active{display:block}
+.panel-h{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:14px 18px;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.2));
+  border-bottom:1px solid var(--line);
+}
+html[data-theme="dark"] .panel-h{background:linear-gradient(180deg,rgba(255,255,255,.04),transparent)}
+.panel-h h2{font-size:16px;font-weight:700}
+.panel-h span{font-size:12px;color:var(--muted)}
+.panel-b{padding:16px 18px 18px}
+
+.hero{
+  position:relative;overflow:hidden;border-radius:22px;padding:22px 24px;
+  background:
+    linear-gradient(125deg,rgba(16,32,51,.96),rgba(15,58,58,.92) 55%,rgba(26,95,143,.88)),
+    radial-gradient(circle at 85% 20%, rgba(184,107,42,.35), transparent 40%);
+  color:#f3f8fd;box-shadow:var(--shadow-lg);border:1px solid rgba(255,255,255,.08);
+  display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;
+}
+.hero::after{
+  content:"";position:absolute;right:-40px;bottom:-60px;width:220px;height:220px;border-radius:50%;
+  border:18px solid rgba(255,255,255,.05);pointer-events:none;
+}
+.hero .kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9fd4cf;font-family:var(--fm)}
+.hero h1{font-size:30px;font-weight:800;margin:6px 0 8px;letter-spacing:-.02em}
+.hero p{color:#c7d7e8;font-size:14px;max-width:520px;line-height:1.5}
+.hero-actions{display:flex;gap:8px;flex-wrap:wrap;z-index:1}
+.hero .btn-soft{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.18)}
+.hero .btn-soft:hover{background:rgba(255,255,255,.18);color:#fff}
+
+.shift-banner{
+  display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);
+  font-family:var(--fm);font-size:11px;color:#d7e6f4;
+}
+.chip b{color:#fff}
+
+.status-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{
+  position:relative;overflow:hidden;
+  background:var(--elevated);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);
+  transition:transform .18s ease,border-color .18s;
+}
+.stat::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--line2);
+}
+.stat:hover{transform:translateY(-2px)}
+.stat .lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:var(--fm)}
+.stat .val{font-size:28px;font-weight:800;font-family:var(--fm);margin-top:6px;letter-spacing:-.03em}
+.stat .sub{font-size:12px;color:var(--ink2);margin-top:4px}
+.stat.ok::before{background:var(--ok)}.stat.ok .val{color:var(--ok)}
+.stat.warn::before{background:var(--caution)}.stat.warn .val{color:var(--caution)}
+.stat.crit::before{background:var(--alarm)}.stat.crit .val{color:var(--alarm)}
+
+.cond-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.cond-card{
+  border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--surface);
+  cursor:pointer;transition:all .2s ease;position:relative;overflow:hidden;
+}
+.cond-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:rgba(11,110,106,.3)}
+.cond-card .lbl{font-size:12px;font-weight:600;color:var(--ink2)}
+.cond-card .val{font-size:18px;font-weight:800;margin-top:8px;font-family:var(--fm)}
+.cond-card .sub{font-size:11px;color:var(--muted);margin-top:4px}
+.cond-card.ok{background:linear-gradient(180deg,rgba(15,122,69,.08),var(--surface));border-color:rgba(15,122,69,.2)}
+.cond-card.ok .val{color:var(--ok)}
+.cond-card.warn{background:linear-gradient(180deg,rgba(196,95,10,.1),var(--surface));border-color:rgba(196,95,10,.25)}
+.cond-card.warn .val{color:var(--caution)}
+.cond-card.crit{background:linear-gradient(180deg,rgba(196,24,44,.1),var(--surface));border-color:rgba(196,24,44,.28)}
+.cond-card.crit .val{color:var(--alarm)}
+
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.section{
+  border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--surface);
+  transition:border-color .18s;
+}
+.section:hover{border-color:rgba(11,110,106,.25)}
+.section h3{
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);
+  font-family:var(--fm);margin-bottom:12px;padding-bottom:8px;border-bottom:1px dashed var(--line);
+}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.field label{font-size:12px;color:var(--ink2);font-weight:600}
+.field .hint{font-size:10px;color:var(--muted);font-family:var(--fm)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;background:var(--elevated)}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}
+th{background:var(--surface);font-family:var(--fm);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+td input{padding:7px 10px;font-family:var(--fm);font-size:12px}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;
+  font-size:11px;font-weight:700;font-family:var(--fm);border:1px solid var(--line);
+}
+.badge.ok{background:var(--ok-bg);color:var(--ok)}
+.badge.warn{background:var(--caution-bg);color:var(--caution)}
+.badge.crit{background:var(--alarm-bg);color:var(--alarm)}
+.badge.idle{background:var(--surface);color:var(--muted)}
+
+.alarm-list{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto}
+.alarm-item{
+  display:grid;grid-template-columns:78px 1fr auto;gap:10px;align-items:center;
+  padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+}
+.alarm-item.crit{border-color:rgba(196,24,44,.3);background:var(--alarm-bg)}
+.alarm-item.warn{border-color:rgba(196,95,10,.28);background:var(--caution-bg)}
+
+.toast{
+  position:fixed;right:18px;bottom:18px;z-index:50;min-width:270px;max-width:400px;
+  background:linear-gradient(145deg,#102033,#163047);color:#eef5fb;padding:14px 16px;border-radius:14px;
+  box-shadow:var(--shadow-lg);transform:translateY(120%);opacity:0;transition:all .28s ease;
+  border:1px solid rgba(255,255,255,.08);
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast strong{display:block;margin-bottom:3px}
+.modal-bg{
+  position:fixed;inset:0;background:rgba(10,16,26,.55);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;z-index:40;padding:16px;
+}
+.modal-bg.show{display:flex}
+.modal{
+  width:min(760px,100%);max-height:85vh;overflow:auto;background:var(--elevated);
+  border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-lg);animation:rise .25s ease;
+}
+.modal-h{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line);background:var(--surface)}
+.modal-b{padding:18px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px}
+.history{display:flex;flex-direction:column;gap:8px}
+.history button{
+  text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);transition:all .15s;
+}
+.history button:hover{border-color:var(--accent);transform:translateX(2px)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--fm)}
+.block-inner{margin-top:16px}
+
+@media(max-width:1100px){
+  .status-row,.cond-grid{grid-template-columns:repeat(2,1fr)}
+  .grid,.grid-3{grid-template-columns:1fr}
+  .brand{max-width:100%;flex:1 1 auto}
+}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{display:none}
+  .topbar{flex-wrap:wrap;height:auto;padding:12px;row-gap:10px}
+  .meta{width:100%;flex-wrap:wrap}
+  .meta .field,.meta .field-size,.meta .field-shift{min-width:0;flex:1 1 140px}
+  .hero h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="logo-mark">BM</div>
+    <div class="brand">
+      <strong>SUGNA SPONGE &amp; POWER PVT. LTD. — Steel Division</strong>
+      <span>Block Mill Health Card · Bhogasmudram Tadipatri (515411)</span>
+    </div>
+    <div class="meta">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="recDate"/>
+      </div>
+      <div class="field field-size">
+        <label>Size</label>
+        <input type="text" id="recSize" placeholder="e.g. 8 mm" maxlength="24"/>
+      </div>
+      <div class="field field-shift">
+        <label>Shift</label>
+        <div class="shift-toggle" id="shiftToggle">
+          <input type="radio" name="recShift" id="shiftA" value="A" checked>
+          <label for="shiftA">Shift A<small>Day · 06:00–18:00</small></label>
+          <input type="radio" name="recShift" id="shiftB" value="B">
+          <label for="shiftB">Shift B<small>Night · 18:00–06:00</small></label>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-ghost" id="btnTheme" title="Toggle theme">Theme</button>
+    <button class="btn btn-ghost" id="btnSetpoints">Set Points</button>
+    <button class="btn btn-ghost" id="btnFolder">Data Folder</button>
+    <button class="btn btn-primary" id="btnSave">Save Record</button>
+  </header>
+
+  <div class="alarmbar" id="alarmBar">
+    <span class="alarm-pill ok" id="alarmState">NORMAL</span>
+    <div class="alarm-scroll"><div class="alarm-track" id="alarmTicker"><span>System ready — no active alarms</span></div></div>
+    <button class="btn btn-sm btn-soft" id="btnAck">Ack</button>
+  </div>
+
+  <aside class="side">
+    <h3>Equipment Map</h3>
+    <button class="nav-btn active" data-panel="overview"><span class="nav-left"><span class="nav-ico">OV</span><span>Overview</span></span><i class="dot ok" data-dot="overview"></i></button>
+    <button class="nav-btn" data-panel="drum"><span class="nav-left"><span class="nav-ico">DS</span><span>Drum Shear</span></span><i class="dot" data-dot="drum"></i></button>
+    <button class="nav-btn" data-panel="hex"><span class="nav-left"><span class="nav-ico">HX</span><span>Heat Exchanger</span></span><i class="dot" data-dot="hex"></i></button>
+    <button class="nav-btn" data-panel="filters60"><span class="nav-left"><span class="nav-ico">60</span><span>60 µm Filter</span></span><i class="dot" data-dot="filters60"></i></button>
+    <button class="nav-btn" data-panel="filters2010"><span class="nav-left"><span class="nav-ico">F</span><span>20 / 10 µm Filters</span></span><i class="dot" data-dot="filters2010"></i></button>
+    <button class="nav-btn" data-panel="separator"><span class="nav-left"><span class="nav-ico">OS</span><span>Oil Separator</span></span><i class="dot" data-dot="separator"></i></button>
+    <button class="nav-btn" data-panel="stands"><span class="nav-left"><span class="nav-ico">BM</span><span>Block Mill Stands</span></span><i class="dot" data-dot="stands"></i></button>
+    <button class="nav-btn" data-panel="synchro"><span class="nav-left"><span class="nav-ico">SY</span><span>Synchro / Gauge</span></span><i class="dot" data-dot="synchro"></i></button>
+    <button class="nav-btn" data-panel="rolls"><span class="nav-left"><span class="nav-ico">RM</span><span>Roll Measurement</span></span><i class="dot" data-dot="rolls"></i></button>
+    <button class="nav-btn" data-panel="signoff"><span class="nav-left"><span class="nav-ico">SO</span><span>Sign-off</span></span><i class="dot" data-dot="signoff"></i></button>
+    <button class="nav-btn" data-panel="alarms"><span class="nav-left"><span class="nav-ico">AL</span><span>Active Alarms</span></span><i class="dot" data-dot="alarms"></i></button>
+    <div class="side-foot">
+      <div id="folderStatus" class="folder-miss">Folder: not linked</div>
+      <div id="autoStatus" class="muted" style="margin-top:4px">Autosave · 2-shift mode</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="panel active" id="panel-overview">
+      <div class="hero">
+        <div>
+          <div class="kicker">Machine Condition · Live Health</div>
+          <h1>Block Mill Health Card</h1>
+          <p>Two-shift digital checklist. Enter readings, watch live condition, and save dated records to your PC folder.</p>
+          <div class="shift-banner">
+            <span class="chip">Shift mode <b>A / B only</b></span>
+            <span class="chip" id="heroShiftChip">Active <b>Shift A</b></span>
+            <span class="chip" id="heroDateChip">Date <b>—</b></span>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-soft" id="btnLoad">Load Saved</button>
+          <button class="btn btn-soft" id="btnExport">Export Excel</button>
+          <button class="btn btn-soft" id="btnClear">Clear Form</button>
+        </div>
+      </div>
+
+      <div class="status-row block-inner">
+        <div class="stat ok" id="statOverall"><div class="lbl">Overall</div><div class="val">OK</div><div class="sub">All parameters within range</div></div>
+        <div class="stat" id="statCrit"><div class="lbl">Critical</div><div class="val">0</div><div class="sub">Above alarm set point</div></div>
+        <div class="stat" id="statWarn"><div class="lbl">Caution</div><div class="val">0</div><div class="sub">Above caution set point</div></div>
+        <div class="stat" id="statFilled"><div class="lbl">Filled</div><div class="val">0%</div><div class="sub">Checklist completion</div></div>
+      </div>
+
+      <div class="panel block-inner" style="display:block">
+        <div class="panel-h"><h2>Condition by Equipment</h2><span id="overviewStamp" class="mono"></span></div>
+        <div class="panel-b"><div class="cond-grid" id="conditionCards"></div></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-drum">
+      <div class="panel-h"><h2>Drum Shear</h2><span>Bearing temperature &amp; oil pressure</span></div>
+      <div class="panel-b">
+        <div class="grid">
+          <div class="section">
+            <h3>Bearing Temperature (°C)</h3>
+            <div class="pair">
+              <div class="field"><label>DE</label><input type="number" step="0.1" data-key="drum.bearingDE"/><span class="hint" data-hint="drum.bearingDE"></span></div>
+              <div class="field"><label>NDE</label><input type="number" step="0.1" data-key="drum.bearingNDE"/><span class="hint" data-hint="drum.bearingNDE"></span></div>
+            </div>
+          </div>
+          <div class="section">
+            <h3>Oil Pressure (Kg/cm²)</h3>
+            <div class="field"><label>Oil Pressure</label><input type="number" step="0.01" data-key="drum.oilPressure"/><span class="hint" data-hint="drum.oilPressure"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-hex">
+      <div class="panel-h"><h2>Heat Exchanger</h2><span>Block &amp; Bevel Gear Lubrication Unit</span></div>
+      <div class="panel-b">
+        <div class="grid">
+          <div class="section">
+            <h3>Pressures (Kg/cm²)</h3>
+            <div class="field"><label>Water Inlet Pressure</label><input type="number" step="0.01" data-key="hex.waterInP"/><span class="hint" data-hint="hex.waterInP"></span></div>
+            <div class="field"><label>Water Outlet Pressure</label><input type="number" step="0.01" data-key="hex.waterOutP"/><span class="hint" data-hint="hex.waterOutP"></span></div>
+            <div class="field"><label>Oil Inlet Pressure</label><input type="number" step="0.01" data-key="hex.oilInP"/><span class="hint" data-hint="hex.oilInP"></span></div>
+            <div class="field"><label>Oil Outlet Pressure</label><input type="number" step="0.01" data-key="hex.oilOutP"/><span class="hint" data-hint="hex.oilOutP"></span></div>
+          </div>
+          <div class="section">
+            <h3>Temperatures (°C)</h3>
+            <div class="field"><label>Water Inlet Temperature</label><input type="number" step="0.1" data-key="hex.waterInT"/><span class="hint" data-hint="hex.waterInT"></span></div>
+            <div class="field"><label>Water Outlet Temperature</label><input type="number" step="0.1" data-key="hex.waterOutT"/><span class="hint" data-hint="hex.waterOutT"></span></div>
+            <div class="field"><label>Oil Inlet Temperature</label><input type="number" step="0.1" data-key="hex.oilInT"/><span class="hint" data-hint="hex.oilInT"></span></div>
+            <div class="field"><label>Oil Outlet Temperature</label><input type="number" step="0.1" data-key="hex.oilOutT"/><span class="hint" data-hint="hex.oilOutT"></span></div>
+          </div>
+          <div class="section">
+            <h3>Maintenance</h3>
+            <div class="field"><label>Heat Exchanger Clean Date</label><input type="date" data-key="hex.hxCleanDate"/></div>
+            <div class="field"><label>Y-Strainer Clean Date</label><input type="date" data-key="hex.yStrainerDate"/></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-filters60">
+      <div class="panel-h"><h2>60 Micron Filter</h2><span>Lubrication unit filtration</span></div>
+      <div class="panel-b">
+        <div class="grid">
+          <div class="section">
+            <h3>Filter-1</h3>
+            <div class="field"><label>Install / Clean Date</label><input type="date" data-key="f60.f1.date"/></div>
+            <div class="field"><label>No. Of Filter Clean</label><input type="number" step="1" data-key="f60.f1.count"/></div>
+            <div class="field"><label>Taken In Line</label><select data-key="f60.f1.inLine"><option value="">—</option><option>Yes</option><option>No</option></select></div>
+          </div>
+          <div class="section">
+            <h3>Filter-2</h3>
+            <div class="field"><label>Install / Clean Date</label><input type="date" data-key="f60.f2.date"/></div>
+            <div class="field"><label>No. Of Filter Clean</label><input type="number" step="1" data-key="f60.f2.count"/></div>
+            <div class="field"><label>Taken In Line</label><select data-key="f60.f2.inLine"><option value="">—</option><option>Yes</option><option>No</option></select></div>
+          </div>
+          <div class="section">
+            <h3>Common</h3>
+            <div class="field"><label>Differential Pressure (Kg/cm²)</label><input type="number" step="0.01" data-key="f60.diffP"/><span class="hint" data-hint="f60.diffP"></span></div>
+            <div class="field"><label>Oil Tank Level</label><select data-key="f60.oilLevel"><option value="">—</option><option>High</option><option>Normal</option><option>Low</option></select></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-filters2010">
+      <div class="panel-h"><h2>20 µm &amp; 10 µm Filters</h2><span>Block &amp; Bevel Gear Lubrication Unit</span></div>
+      <div class="panel-b">
+        <div class="grid">
+          <div class="section">
+            <h3>20 Micron — Filter-1</h3>
+            <div class="field"><label>Install / Clean Date</label><input type="date" data-key="f20.f1.date"/></div>
+            <div class="field"><label>No. Of Filter Clean</label><input type="number" data-key="f20.f1.count"/></div>
+            <div class="field"><label>Taken In Line</label><select data-key="f20.f1.inLine"><option value="">—</option><option>Yes</option><option>No</option></select></div>
+          </div>
+          <div class="section">
+            <h3>20 Micron — Filter-2</h3>
+            <div class="field"><label>Install / Clean Date</label><input type="date" data-key="f20.f2.date"/></div>
+            <div class="field"><label>No. Of Filter Clean</label><input type="number" data-key="f20.f2.count"/></div>
+            <div class="field"><label>Taken In Line</label><select data-key="f20.f2.inLine"><option value="">—</option><option>Yes</option><option>No</option></select></div>
+          </div>
+          <div class="section">
+            <h3>20 Micron — Common</h3>
+            <div class="field"><label>Differential Pressure</label><input type="number" step="0.01" data-key="f20.diffP"/><span class="hint" data-hint="f20.diffP"></span></div>
+            <div class="field"><label>Oil Tank Level</label><select data-key="f20.oilLevel"><option value="">—</option><option>High</option><option>Normal</option><option>Low</option></select></div>
+          </div>
+          <div class="section">
+            <h3>10 Micron — Filter-1</h3>
+            <div class="field"><label>Install / Clean Date</label><input type="date" data-key="f10.f1.date"/></div>
+            <div class="field"><label>No. Of Filter Clean</label><input type="number" data-key="f10.f1.count"/></div>
+            <div class="field"><label>Taken In Line</label><select data-key="f10.f1.inLine"><option value="">—</option><option>Yes</option><option>No</option></select></div>
+          </div>
+          <div class="section">
+            <h3>10 Micron — Filter-2</h3>
+            <div class="field"><label>Install / Clean Date</label><input type="date" data-key="f10.f2.date"/></div>
+            <div class="field"><label>No. Of Filter Clean</label><input type="number" data-key="f10.f2.count"/></div>
+            <div class="field"><label>Taken In Line</label><select data-key="f10.f2.inLine"><option value="">—</option><option>Yes</option><option>No</option></select></div>
+          </div>
+          <div class="section">
+            <h3>10 Micron — Common</h3>
+            <div class="field"><label>Differential Pressure</label><input type="number" step="0.01" data-key="f10.diffP"/><span class="hint" data-hint="f10.diffP"></span></div>
+            <div class="field"><label>Oil Tank Level</label><select data-key="f10.oilLevel"><option value="">—</option><option>High</option><option>Normal</option><option>Low</option></select></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-separator">
+      <div class="panel-h"><h2>Oil Separator &amp; Water Seals</h2><span>Running parameters</span></div>
+      <div class="panel-b">
+        <div class="grid">
+          <div class="section">
+            <h3>Oil Separator</h3>
+            <div class="field"><label>Flow Rate</label><input type="number" step="0.1" data-key="sep.flowRate"/><span class="hint" data-hint="sep.flowRate"></span></div>
+            <div class="field"><label>Set Point Temperature (°C)</label><input type="number" step="0.1" data-key="sep.setTemp"/><span class="hint" data-hint="sep.setTemp"></span></div>
+            <div class="field"><label>Running Time Per Day</label><input type="text" data-key="sep.runTime" placeholder="e.g. 6.5 hrs"/></div>
+            <div class="field"><label>Disc Clean Date</label><input type="date" data-key="sep.discClean"/></div>
+            <div class="field"><label>Inlet Oil Pressure (Kg/cm²)</label><input type="number" step="0.01" data-key="sep.inOilP"/><span class="hint" data-hint="sep.inOilP"></span></div>
+            <div class="field"><label>Outlet Oil Pressure (Kg/cm²)</label><input type="number" step="0.01" data-key="sep.outOilP"/><span class="hint" data-hint="sep.outOilP"></span></div>
+          </div>
+          <div class="section">
+            <h3>Water Seal Install Date</h3>
+            <div class="grid-3">
+              <div class="field"><label>BM-1</label><input type="date" data-key="seal.bm1"/></div>
+              <div class="field"><label>BM-2</label><input type="date" data-key="seal.bm2"/></div>
+              <div class="field"><label>BM-3</label><input type="date" data-key="seal.bm3"/></div>
+              <div class="field"><label>BM-4</label><input type="date" data-key="seal.bm4"/></div>
+              <div class="field"><label>BM-5</label><input type="date" data-key="seal.bm5"/></div>
+              <div class="field"><label>BM-6</label><input type="date" data-key="seal.bm6"/></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-stands">
+      <div class="panel-h"><h2>Block Mill Stand</h2><span>BM-1 to BM-6 oil pressures</span></div>
+      <div class="panel-b">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Stand</th><th>Bevel Gear Unit Oil P (Kg/cm²)</th><th>Roll Unit Oil P (Kg/cm²)</th><th>Status</th></tr></thead>
+            <tbody id="standsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-synchro">
+      <div class="panel-h"><h2>Synchro / Gauge Panel</h2><span>Pressures, emergency tank, LVDH</span></div>
+      <div class="panel-b">
+        <div class="grid">
+          <div class="section">
+            <h3>Gauge Panel</h3>
+            <div class="field"><label>Block Mill Oil Pressure (Kg/cm²)</label><input type="number" step="0.01" data-key="sync.bmOilP"/><span class="hint" data-hint="sync.bmOilP"></span></div>
+            <div class="field"><label>Bevel Gear Oil Pressure (Kg/cm²)</label><input type="number" step="0.01" data-key="sync.bevelOilP"/><span class="hint" data-hint="sync.bevelOilP"></span></div>
+            <div class="field"><label>Water Pressure (Kg/cm²)</label><input type="number" step="0.01" data-key="sync.waterP"/><span class="hint" data-hint="sync.waterP"></span></div>
+            <div class="field"><label>Emergency Tank Air Pressure (Kg/cm²)</label><input type="number" step="0.01" data-key="sync.emergAirP"/><span class="hint" data-hint="sync.emergAirP"></span></div>
+            <div class="field"><label>Emergency Tank Oil Level</label><select data-key="sync.emergOil"><option value="">—</option><option>High</option><option>Normal</option><option>Low</option></select></div>
+            <div class="field"><label>LVDH Running Temperature (°C)</label><input type="number" step="0.1" data-key="sync.lvdhTemp"/><span class="hint" data-hint="sync.lvdhTemp"></span></div>
+            <div class="field"><label>LVDH Running Time</label><input type="text" data-key="sync.lvdhTime" placeholder="e.g. 2.0 hrs"/></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-rolls">
+      <div class="panel-h"><h2>Roll Measurement</h2><span>Diameter, pass no., roll number</span></div>
+      <div class="panel-b">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Stand</th><th>Roll Dia</th><th>Pass No.</th><th>Roll Number</th></tr></thead>
+            <tbody id="rollsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-signoff">
+      <div class="panel-h"><h2>Sign-off</h2><span>Prepared / Reviewed / HOD</span></div>
+      <div class="panel-b">
+        <div class="grid-3">
+          <div class="field"><label>Prepared By</label><input type="text" data-key="sign.prepared"/></div>
+          <div class="field"><label>Reviewed By</label><input type="text" data-key="sign.reviewed"/></div>
+          <div class="field"><label>Checked By HOD</label><input type="text" data-key="sign.hod"/></div>
+        </div>
+        <div class="field" style="margin-top:12px"><label>Remarks</label><textarea data-key="sign.remarks" rows="3" placeholder="Shift remarks / abnormalities"></textarea></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-alarms">
+      <div class="panel-h"><h2>Active Alarms</h2><span>Live evaluation vs set points</span></div>
+      <div class="panel-b"><div class="alarm-list" id="alarmList"><div class="muted">No active alarms.</div></div></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-bg" id="setpointModal">
+  <div class="modal">
+    <div class="modal-h"><strong>Alarm Set Points</strong><button class="btn btn-sm btn-soft" id="closeSetpoints">Close</button></div>
+    <div class="modal-b">
+      <p class="muted" style="margin-bottom:12px">Caution = warning. Alarm = critical. Leave blank to disable. Tune to plant SOP.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Parameter</th><th>Caution</th><th>Alarm</th><th>Low Alarm</th><th>Unit</th></tr></thead>
+          <tbody id="spBody"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button class="btn btn-soft" id="resetSP">Reset Defaults</button>
+        <button class="btn btn-primary" id="saveSP">Save Set Points</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="loadModal">
+  <div class="modal">
+    <div class="modal-h"><strong>Load Saved Record</strong><button class="btn btn-sm btn-soft" id="closeLoad">Close</button></div>
+    <div class="modal-b"><div class="history" id="historyList"></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><strong></strong><div></div></div>
+
+<script>
+const STANDS = ['BM-1','BM-2','BM-3','BM-4','BM-5','BM-6'];
+const STORAGE_KEY = 'bmhc_records_v2';
+const SP_KEY = 'bmhc_setpoints_v1';
+const DRAFT_KEY = 'bmhc_draft_v2';
+const SHIFT_LABEL = {A:'Shift A · Day', B:'Shift B · Night'};
+
+const DEFAULT_SP = {
+  'drum.bearingDE':  {label:'Drum Shear Bearing DE', unit:'°C', caution:60, alarm:70, low:null},
+  'drum.bearingNDE': {label:'Drum Shear Bearing NDE', unit:'°C', caution:60, alarm:70, low:null},
+  'drum.oilPressure':{label:'Drum Shear Oil Pressure', unit:'Kg/cm²', caution:null, alarm:null, low:1.5},
+  'hex.waterInP':    {label:'HX Water Inlet P', unit:'Kg/cm²', caution:null, alarm:null, low:1.0},
+  'hex.waterOutP':   {label:'HX Water Outlet P', unit:'Kg/cm²', caution:null, alarm:null, low:0.8},
+  'hex.oilInP':      {label:'HX Oil Inlet P', unit:'Kg/cm²', caution:null, alarm:null, low:1.5},
+  'hex.oilOutP':     {label:'HX Oil Outlet P', unit:'Kg/cm²', caution:null, alarm:null, low:1.2},
+  'hex.waterInT':    {label:'HX Water Inlet T', unit:'°C', caution:40, alarm:45, low:null},
+  'hex.waterOutT':   {label:'HX Water Outlet T', unit:'°C', caution:45, alarm:50, low:null},
+  'hex.oilInT':      {label:'HX Oil Inlet T', unit:'°C', caution:55, alarm:65, low:null},
+  'hex.oilOutT':     {label:'HX Oil Outlet T', unit:'°C', caution:50, alarm:60, low:null},
+  'f60.diffP':       {label:'60µm Diff Pressure', unit:'Kg/cm²', caution:1.5, alarm:2.0, low:null},
+  'f20.diffP':       {label:'20µm Diff Pressure', unit:'Kg/cm²', caution:1.5, alarm:2.0, low:null},
+  'f10.diffP':       {label:'10µm Diff Pressure', unit:'Kg/cm²', caution:1.5, alarm:2.0, low:null},
+  'sep.flowRate':    {label:'Oil Separator Flow', unit:'', caution:null, alarm:null, low:null},
+  'sep.setTemp':     {label:'Separator Set Temp', unit:'°C', caution:70, alarm:80, low:null},
+  'sep.inOilP':      {label:'Separator Inlet Oil P', unit:'Kg/cm²', caution:null, alarm:null, low:1.0},
+  'sep.outOilP':     {label:'Separator Outlet Oil P', unit:'Kg/cm²', caution:null, alarm:null, low:0.8},
+  'sync.bmOilP':     {label:'Synchro BM Oil P', unit:'Kg/cm²', caution:null, alarm:null, low:1.5},
+  'sync.bevelOilP':  {label:'Synchro Bevel Oil P', unit:'Kg/cm²', caution:null, alarm:null, low:1.5},
+  'sync.waterP':     {label:'Synchro Water P', unit:'Kg/cm²', caution:null, alarm:null, low:1.0},
+  'sync.emergAirP':  {label:'Emergency Air P', unit:'Kg/cm²', caution:null, alarm:null, low:3.0},
+  'sync.lvdhTemp':   {label:'LVDH Running Temp', unit:'°C', caution:70, alarm:80, low:null},
+};
+STANDS.forEach(s=>{
+  const k = s.toLowerCase().replace('-','');
+  DEFAULT_SP[`stand.${k}.bevel`] = {label:`${s} Bevel Gear Oil P`, unit:'Kg/cm²', caution:null, alarm:null, low:1.5};
+  DEFAULT_SP[`stand.${k}.roll`]  = {label:`${s} Roll Unit Oil P`, unit:'Kg/cm²', caution:null, alarm:null, low:1.5};
+});
+
+let setpoints = loadJSON(SP_KEY, structuredClone(DEFAULT_SP));
+let dirHandle = null;
+let ackQuiet = false;
+
+function loadJSON(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch{ return fallback; } }
+function saveJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+function toast(title, msg=''){
+  const el = document.getElementById('toast');
+  el.querySelector('strong').textContent = title;
+  el.querySelector('div').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>el.classList.remove('show'), 2800);
+}
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function getShift(){ return document.querySelector('input[name="recShift"]:checked')?.value || 'A'; }
+function setShift(v){
+  const el = document.querySelector(`input[name="recShift"][value="${v==='B'?'B':'A'}"]`);
+  if(el) el.checked = true;
+}
+
+function buildStandTables(){
+  const sb = document.getElementById('standsBody');
+  const rb = document.getElementById('rollsBody');
+  sb.innerHTML = ''; rb.innerHTML = '';
+  STANDS.forEach(s=>{
+    const k = s.toLowerCase().replace('-','');
+    sb.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td><strong>${s}</strong></td>
+        <td><input type="number" step="0.01" data-key="stand.${k}.bevel"/><div class="hint" data-hint="stand.${k}.bevel"></div></td>
+        <td><input type="number" step="0.01" data-key="stand.${k}.roll"/><div class="hint" data-hint="stand.${k}.roll"></div></td>
+        <td><span class="badge idle" data-stand-status="${k}">—</span></td>
+      </tr>`);
+    rb.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td><strong>${s}</strong></td>
+        <td><input type="number" step="0.01" data-key="roll.${k}.dia"/></td>
+        <td><input type="text" data-key="roll.${k}.pass"/></td>
+        <td><input type="text" data-key="roll.${k}.number"/></td>
+      </tr>`);
+  });
+}
+
+function getVal(key){ return document.querySelector(`[data-key="${key}"]`)?.value ?? ''; }
+function setVal(key, val){ const el = document.querySelector(`[data-key="${key}"]`); if(el && val!=null) el.value = val; }
+
+function collectRecord(){
+  const data = {};
+  document.querySelectorAll('[data-key]').forEach(el=>{ data[el.dataset.key] = el.value; });
+  return {
+    meta:{
+      plant:'SUGNA SPONGE & POWER PRIVATE LIMITED (STEEL DIVISION)',
+      location:'BHOGASMUDRAM TADIPATRI (515411)',
+      doc:'Block Mill Health Card',
+      date: document.getElementById('recDate').value,
+      shift: getShift(),
+      shiftLabel: SHIFT_LABEL[getShift()],
+      size: document.getElementById('recSize').value,
+      savedAt: new Date().toISOString(),
+    },
+    data,
+    evaluation: evaluateAll(data),
+  };
+}
+
+function applyRecord(rec){
+  if(!rec) return;
+  if(rec.meta){
+    document.getElementById('recDate').value = rec.meta.date || todayISO();
+    setShift(rec.meta.shift === 'B' ? 'B' : 'A');
+    document.getElementById('recSize').value = rec.meta.size || '';
+  }
+  Object.entries(rec.data || {}).forEach(([k,v])=>setVal(k,v));
+  evaluateAndRender();
+}
+
+function num(v){ if(v===''||v==null) return null; const n=Number(v); return Number.isFinite(n)?n:null; }
+
+function evaluateValue(key, raw){
+  const sp = setpoints[key];
+  if(!sp) return {level:'idle', msg:''};
+  const v = num(raw);
+  if(v===null) return {level:'idle', msg:''};
+  if(sp.alarm!=null && v >= sp.alarm) return {level:'crit', msg:`${sp.label}: ${v} ≥ alarm ${sp.alarm} ${sp.unit||''}`.trim()};
+  if(sp.low!=null && v <= sp.low) return {level:'crit', msg:`${sp.label}: ${v} ≤ low alarm ${sp.low} ${sp.unit||''}`.trim()};
+  if(sp.caution!=null && v >= sp.caution) return {level:'warn', msg:`${sp.label}: ${v} ≥ caution ${sp.caution} ${sp.unit||''}`.trim()};
+  return {level:'ok', msg:`${sp.label}: normal`};
+}
+
+function evaluateDiscrete(key, raw){
+  if(key.endsWith('oilLevel') || key==='sync.emergOil'){
+    if(raw==='Low') return {level:'crit', msg:`${key}: Oil level LOW`};
+    if(raw==='High') return {level:'warn', msg:`${key}: Oil level HIGH`};
+    if(raw==='Normal') return {level:'ok', msg:''};
+  }
+  return {level:'idle', msg:''};
+}
+
+function evaluateAll(data){
+  const alarms = [];
+  const bySection = {
+    overview:'ok', drum:'ok', hex:'ok', filters60:'ok', filters2010:'ok',
+    separator:'ok', stands:'ok', synchro:'ok', rolls:'idle', signoff:'idle', alarms:'ok'
+  };
+  const bump = (sec, level)=>{
+    const rank = {idle:0, ok:1, warn:2, crit:3};
+    if(rank[level] > rank[bySection[sec]]) bySection[sec] = level;
+  };
+  const sectionOf = (key)=>{
+    if(key.startsWith('drum.')) return 'drum';
+    if(key.startsWith('hex.')) return 'hex';
+    if(key.startsWith('f60.')) return 'filters60';
+    if(key.startsWith('f20.')||key.startsWith('f10.')) return 'filters2010';
+    if(key.startsWith('sep.')||key.startsWith('seal.')) return 'separator';
+    if(key.startsWith('stand.')) return 'stands';
+    if(key.startsWith('sync.')) return 'synchro';
+    if(key.startsWith('roll.')) return 'rolls';
+    if(key.startsWith('sign.')) return 'signoff';
+    return 'overview';
+  };
+
+  Object.keys(data).forEach(key=>{
+    let r = evaluateValue(key, data[key]);
+    if(r.level==='idle') r = evaluateDiscrete(key, data[key]);
+    const sec = sectionOf(key);
+    if(r.level==='ok' || r.level==='warn' || r.level==='crit') bump(sec, r.level);
+    if(r.level==='warn' || r.level==='crit'){
+      alarms.push({key, level:r.level, msg:r.msg, section:sec});
+      bump('alarms', r.level); bump('overview', r.level);
+    }
+  });
+
+  STANDS.forEach(s=>{
+    const k = s.toLowerCase().replace('-','');
+    const a = evaluateValue(`stand.${k}.bevel`, data[`stand.${k}.bevel`]);
+    const b = evaluateValue(`stand.${k}.roll`, data[`stand.${k}.roll`]);
+    const rank = {idle:0, ok:1, warn:2, crit:3};
+    const level = rank[a.level] >= rank[b.level] ? a.level : b.level;
+    const badge = document.querySelector(`[data-stand-status="${k}"]`);
+    if(badge){
+      badge.className = 'badge ' + (level==='idle'?'idle':level);
+      badge.textContent = level==='idle'?'—':level==='ok'?'OK':level==='warn'?'CAUTION':'ALARM';
+    }
+  });
+
+  const keys = Object.keys(data);
+  const filled = keys.filter(k=>String(data[k]||'').trim()!=='').length;
+  const pct = keys.length ? Math.round(filled/keys.length*100) : 0;
+  const overall = alarms.some(a=>a.level==='crit') ? 'crit'
+    : alarms.some(a=>a.level==='warn') ? 'warn'
+    : filled ? 'ok' : 'idle';
+
+  return {alarms, bySection, filledPct:pct, overall, crit:alarms.filter(a=>a.level==='crit').length, warn:alarms.filter(a=>a.level==='warn').length};
+}
+
+function paintHints(){
+  document.querySelectorAll('[data-hint]').forEach(h=>{
+    const sp = setpoints[h.dataset.hint];
+    if(!sp){ h.textContent=''; return; }
+    const parts = [];
+    if(sp.caution!=null) parts.push(`C ${sp.caution}`);
+    if(sp.alarm!=null) parts.push(`A ${sp.alarm}`);
+    if(sp.low!=null) parts.push(`L ${sp.low}`);
+    h.textContent = parts.length ? `SP: ${parts.join(' · ')} ${sp.unit||''}` : 'No set point';
+  });
+}
+
+function evaluateAndRender(){
+  const rec = collectRecord();
+  const ev = rec.evaluation;
+  const shift = getShift();
+
+  document.getElementById('heroShiftChip').innerHTML = `Active <b>${SHIFT_LABEL[shift]}</b>`;
+  document.getElementById('heroDateChip').innerHTML = `Date <b>${rec.meta.date || '—'}</b>`;
+
+  document.querySelectorAll('[data-key]').forEach(el=>{
+    el.classList.remove('alarm-val','caution-val','ok-val');
+    const r = evaluateValue(el.dataset.key, el.value);
+    const d = evaluateDiscrete(el.dataset.key, el.value);
+    const level = r.level!=='idle' ? r.level : d.level;
+    if(level==='crit') el.classList.add('alarm-val');
+    else if(level==='warn') el.classList.add('caution-val');
+    else if(level==='ok' && el.type==='number') el.classList.add('ok-val');
+  });
+
+  Object.entries(ev.bySection).forEach(([sec, level])=>{
+    const dot = document.querySelector(`[data-dot="${sec}"]`);
+    if(dot) dot.className = 'dot ' + (level==='idle'?'':level);
+  });
+
+  const overall = document.getElementById('statOverall');
+  overall.className = 'stat ' + (ev.overall==='idle'?'':ev.overall==='ok'?'ok':ev.overall);
+  overall.querySelector('.val').textContent = ev.overall==='crit'?'ALARM':ev.overall==='warn'?'CAUTION':ev.overall==='ok'?'OK':'—';
+  overall.querySelector('.sub').textContent = ev.overall==='crit'?'Immediate attention required'
+    : ev.overall==='warn'?'Monitor elevated parameters'
+    : ev.overall==='ok'?'All parameters within range'
+    : 'Awaiting readings';
+  document.getElementById('statCrit').className = 'stat ' + (ev.crit?'crit':'');
+  document.getElementById('statCrit').querySelector('.val').textContent = ev.crit;
+  document.getElementById('statWarn').className = 'stat ' + (ev.warn?'warn':'');
+  document.getElementById('statWarn').querySelector('.val').textContent = ev.warn;
+  document.getElementById('statFilled').querySelector('.val').textContent = ev.filledPct + '%';
+
+  const state = document.getElementById('alarmState');
+  const ticker = document.getElementById('alarmTicker');
+  if(ev.crit){ state.className='alarm-pill crit'; state.textContent='ALARM'; }
+  else if(ev.warn){ state.className='alarm-pill warn'; state.textContent='CAUTION'; }
+  else { state.className='alarm-pill ok'; state.textContent='NORMAL'; }
+  if(!ackQuiet && ev.alarms.length){
+    const text = ev.alarms.map(a=>`<span class="${a.level==='crit'?'a':'c'}">[${a.level.toUpperCase()}] ${a.msg}</span>`).join('');
+    ticker.innerHTML = text + text;
+  } else if(!ev.alarms.length){
+    ticker.innerHTML = '<span>System ready — no active alarms</span>';
+  }
+
+  const list = document.getElementById('alarmList');
+  if(!ev.alarms.length) list.innerHTML = '<div class="muted">No active alarms.</div>';
+  else list.innerHTML = ev.alarms.map(a=>`
+    <div class="alarm-item ${a.level}">
+      <span class="badge ${a.level}">${a.level==='crit'?'ALARM':'CAUTION'}</span>
+      <div>${a.msg}<div class="muted" style="font-size:11px;margin-top:2px">${a.section} · ${a.key}</div></div>
+      <button class="btn btn-sm btn-soft" onclick="document.querySelector('[data-panel=\\'${a.section}\\']')?.click()">Open</button>
+    </div>`).join('');
+
+  const labels = {
+    drum:'Drum Shear', hex:'Heat Exchanger', filters60:'60 µm Filter', filters2010:'20/10 µm Filters',
+    separator:'Oil Separator', stands:'Mill Stands', synchro:'Synchro Panel', rolls:'Roll Measurement'
+  };
+  document.getElementById('conditionCards').innerHTML = Object.entries(labels).map(([k,label])=>{
+    const level = ev.bySection[k] || 'idle';
+    const txt = level==='crit'?'ALARM':level==='warn'?'CAUTION':level==='ok'?'HEALTHY':'NO DATA';
+    return `<div class="cond-card ${level==='idle'?'':level}" onclick="document.querySelector('[data-panel=\\'${k}\\']')?.click()">
+      <div class="lbl">${label}</div><div class="val">${txt}</div><div class="sub">Open section →</div></div>`;
+  }).join('');
+
+  document.getElementById('overviewStamp').textContent =
+    `${rec.meta.date || '—'} · ${SHIFT_LABEL[shift]} · Size ${rec.meta.size || '—'}`;
+
+  saveJSON(DRAFT_KEY, rec);
+  return ev;
+}
+
+function recordKey(meta){ return `BMHC_${meta.date}_Shift${meta.shift}`; }
+function getHistory(){ return loadJSON(STORAGE_KEY, {}); }
+
+async function ensureFolder(){
+  if(dirHandle) return dirHandle;
+  if(!window.showDirectoryPicker){ toast('Folder API unavailable', 'Use Chrome/Edge. Export Excel still works.'); return null; }
+  try{
+    dirHandle = await showDirectoryPicker({mode:'readwrite'});
+    document.getElementById('folderStatus').textContent = `Folder: ${dirHandle.name}`;
+    document.getElementById('folderStatus').className = 'folder-ok';
+    toast('Folder linked', dirHandle.name);
+    return dirHandle;
+  }catch(e){ if(e.name!=='AbortError') toast('Folder not selected', e.message); return null; }
+}
+
+async function writeToFolder(filename, blob){
+  const dir = await ensureFolder();
+  if(!dir) return false;
+  const fileHandle = await dir.getFileHandle(filename, {create:true});
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob); await writable.close();
+  return true;
+}
+
+function downloadBlob(name, blob){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+}
+
+async function saveRecord(){
+  const rec = collectRecord();
+  if(!rec.meta.date){ toast('Date required'); return; }
+  const key = recordKey(rec.meta);
+  const hist = getHistory(); hist[key] = rec; saveJSON(STORAGE_KEY, hist);
+  const jsonBlob = new Blob([JSON.stringify(rec,null,2)], {type:'application/json'});
+  const xlsxBlob = buildXlsxBlob(rec);
+  let folderOk = false;
+  if(dirHandle || window.showDirectoryPicker){
+    try{
+      if(!dirHandle) await ensureFolder();
+      if(dirHandle){ await writeToFolder(`${key}.json`, jsonBlob); await writeToFolder(`${key}.xlsx`, xlsxBlob); folderOk = true; }
+    }catch(e){ toast('Folder write failed', e.message); }
+  }
+  if(!folderOk){ downloadBlob(`${key}.json`, jsonBlob); downloadBlob(`${key}.xlsx`, xlsxBlob); }
+  evaluateAndRender();
+  toast('Record saved', folderOk ? `Saved to folder: ${key}` : `Downloaded + browser history: ${key}`);
+}
+
+function buildXlsxBlob(rec){
+  const d = rec.data;
+  const rows = [
+    ['SUGNA SPONGE & POWER PRIVATE LIMITED (STEEL DIVISION)'],
+    ['BHOGASMUDRAM TADIPATRI (515411)'],
+    ['Doc Name: Block Mill', '', '', '', '', '', `Date: ${rec.meta.date}`, '', `Shift: ${rec.meta.shiftLabel||rec.meta.shift}`, `Size: ${rec.meta.size||''}`],
+    [],
+    ['Equipment','Parameter','Value','Unit','Status'],
+  ];
+  const add = (eq, param, key, unit='')=>{
+    const v = d[key] ?? '';
+    const ev = evaluateValue(key, v);
+    const disc = evaluateDiscrete(key, v);
+    const st = ev.level!=='idle'?ev.level:(disc.level!=='idle'?disc.level:'');
+    rows.push([eq, param, v, unit, st.toUpperCase()]);
+  };
+  add('Drum Shear','Bearing Temp DE','drum.bearingDE','°C');
+  add('Drum Shear','Bearing Temp NDE','drum.bearingNDE','°C');
+  add('Drum Shear','Oil Pressure','drum.oilPressure','Kg/cm²');
+  ['waterInP','waterOutP','oilInP','oilOutP'].forEach(k=>add('Heat Exchanger',k,`hex.${k}`,'Kg/cm²'));
+  ['waterInT','waterOutT','oilInT','oilOutT'].forEach(k=>add('Heat Exchanger',k,`hex.${k}`,'°C'));
+  add('Heat Exchanger','HX Clean Date','hex.hxCleanDate');
+  add('Heat Exchanger','Y-Strainer Clean Date','hex.yStrainerDate');
+  add('60µm','Diff Pressure','f60.diffP','Kg/cm²');
+  add('60µm','Oil Tank Level','f60.oilLevel');
+  add('20µm','Diff Pressure','f20.diffP','Kg/cm²');
+  add('10µm','Diff Pressure','f10.diffP','Kg/cm²');
+  add('Oil Separator','Flow Rate','sep.flowRate');
+  add('Oil Separator','Set Point Temp','sep.setTemp','°C');
+  add('Oil Separator','Running Time','sep.runTime');
+  add('Oil Separator','Disc Clean','sep.discClean');
+  add('Oil Separator','Inlet Oil P','sep.inOilP','Kg/cm²');
+  add('Oil Separator','Outlet Oil P','sep.outOilP','Kg/cm²');
+  STANDS.forEach(s=>{
+    const k=s.toLowerCase().replace('-','');
+    add('Block Mill Stand', `${s} Bevel Gear Oil P`, `stand.${k}.bevel`, 'Kg/cm²');
+    add('Block Mill Stand', `${s} Roll Unit Oil P`, `stand.${k}.roll`, 'Kg/cm²');
+    add('Roll Measurement', `${s} Roll Dia`, `roll.${k}.dia`);
+    add('Roll Measurement', `${s} Pass No.`, `roll.${k}.pass`);
+    add('Roll Measurement', `${s} Roll Number`, `roll.${k}.number`);
+    add('Water Seal', `${s} Install Date`, `seal.${k}`);
+  });
+  add('Synchro','BM Oil Pressure','sync.bmOilP','Kg/cm²');
+  add('Synchro','Bevel Gear Oil P','sync.bevelOilP','Kg/cm²');
+  add('Synchro','Water Pressure','sync.waterP','Kg/cm²');
+  add('Synchro','Emergency Air P','sync.emergAirP','Kg/cm²');
+  add('Synchro','Emergency Oil Level','sync.emergOil');
+  add('Synchro','LVDH Temp','sync.lvdhTemp','°C');
+  add('Synchro','LVDH Time','sync.lvdhTime');
+  add('Sign-off','Prepared By','sign.prepared');
+  add('Sign-off','Reviewed By','sign.reviewed');
+  add('Sign-off','Checked By HOD','sign.hod');
+  add('Sign-off','Remarks','sign.remarks');
+  if(rec.evaluation?.alarms?.length){
+    rows.push([]); rows.push(['ACTIVE ALARMS']); rows.push(['Level','Message','Key']);
+    rec.evaluation.alarms.forEach(a=>rows.push([a.level.toUpperCase(), a.msg, a.key]));
+  }
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'HealthCard');
+  return new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+function openLoadModal(){
+  const hist = getHistory();
+  const keys = Object.keys(hist).sort().reverse();
+  const box = document.getElementById('historyList');
+  if(!keys.length){
+    box.innerHTML = '<div class="muted">No saved records yet.</div><div style="margin-top:10px"><input type="file" id="importJson" accept=".json"/></div>';
+  } else {
+    box.innerHTML = keys.map(k=>{
+      const r = hist[k];
+      return `<button data-load="${k}"><strong>${k}</strong><div class="muted">${r.meta?.shiftLabel||('Shift '+r.meta?.shift)} · Crit ${r.evaluation?.crit||0} · Caution ${r.evaluation?.warn||0}</div></button>`;
+    }).join('') + '<div style="margin-top:10px"><input type="file" id="importJson" accept=".json"/></div>';
+    box.querySelectorAll('[data-load]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ applyRecord(hist[btn.dataset.load]); document.getElementById('loadModal').classList.remove('show'); toast('Loaded', btn.dataset.load); });
+    });
+  }
+  document.getElementById('importJson')?.addEventListener('change', async (e)=>{
+    const f = e.target.files?.[0]; if(!f) return;
+    applyRecord(JSON.parse(await f.text()));
+    document.getElementById('loadModal').classList.remove('show');
+    toast('Loaded', f.name);
+  });
+  document.getElementById('loadModal').classList.add('show');
+}
+
+function renderSetpointEditor(){
+  document.getElementById('spBody').innerHTML = Object.entries(setpoints).map(([key,sp])=>`
+    <tr data-sp="${key}">
+      <td>${sp.label}<div class="muted mono" style="font-size:10px">${key}</div></td>
+      <td><input type="number" step="0.1" data-sp-field="caution" value="${sp.caution??''}"/></td>
+      <td><input type="number" step="0.1" data-sp-field="alarm" value="${sp.alarm??''}"/></td>
+      <td><input type="number" step="0.1" data-sp-field="low" value="${sp.low??''}"/></td>
+      <td>${sp.unit||''}</td>
+    </tr>`).join('');
+}
+
+function saveSetpointsFromUI(){
+  document.querySelectorAll('#spBody tr[data-sp]').forEach(tr=>{
+    const key = tr.dataset.sp;
+    const get = (f)=>{ const v = tr.querySelector(`[data-sp-field="${f}"]`).value; return v===''?null:Number(v); };
+    setpoints[key].caution = get('caution');
+    setpoints[key].alarm = get('alarm');
+    setpoints[key].low = get('low');
+  });
+  saveJSON(SP_KEY, setpoints); paintHints(); evaluateAndRender();
+  toast('Set points saved');
+  document.getElementById('setpointModal').classList.remove('show');
+}
+
+function clearForm(){
+  if(!confirm('Clear all entered values for this shift form?')) return;
+  document.querySelectorAll('[data-key]').forEach(el=>el.value='');
+  evaluateAndRender(); toast('Form cleared');
+}
+
+function onShiftChange(){
+  ackQuiet=false;
+  const key = recordKey({date:document.getElementById('recDate').value, shift:getShift()});
+  const hist = getHistory()[key];
+  if(hist && confirm(`Load existing record ${key}?`)) applyRecord(hist);
+  else evaluateAndRender();
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.panel).classList.add('active');
+  });
+});
+
+document.getElementById('btnTheme').addEventListener('click', ()=>{
+  const html = document.documentElement;
+  if(html.dataset.theme==='dark') delete html.dataset.theme; else html.dataset.theme='dark';
+});
+document.getElementById('btnSetpoints').addEventListener('click', ()=>{ renderSetpointEditor(); document.getElementById('setpointModal').classList.add('show'); });
+document.getElementById('closeSetpoints').addEventListener('click', ()=>document.getElementById('setpointModal').classList.remove('show'));
+document.getElementById('saveSP').addEventListener('click', saveSetpointsFromUI);
+document.getElementById('resetSP').addEventListener('click', ()=>{ setpoints = structuredClone(DEFAULT_SP); renderSetpointEditor(); });
+document.getElementById('btnFolder').addEventListener('click', ensureFolder);
+document.getElementById('btnSave').addEventListener('click', saveRecord);
+document.getElementById('btnLoad').addEventListener('click', openLoadModal);
+document.getElementById('closeLoad').addEventListener('click', ()=>document.getElementById('loadModal').classList.remove('show'));
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const rec = collectRecord();
+  downloadBlob(`${recordKey(rec.meta)}.xlsx`, buildXlsxBlob(rec));
+  toast('Excel exported');
+});
+document.getElementById('btnClear').addEventListener('click', clearForm);
+document.getElementById('btnAck').addEventListener('click', ()=>{
+  ackQuiet = true; document.getElementById('alarmBar').classList.add('silent'); toast('Alarms acknowledged');
+});
+document.getElementById('recDate').addEventListener('change', ()=>{ ackQuiet=false; evaluateAndRender(); });
+document.querySelectorAll('input[name="recShift"]').forEach(el=>el.addEventListener('change', onShiftChange));
+document.getElementById('recSize').addEventListener('input', evaluateAndRender);
+document.addEventListener('input', (e)=>{
+  if(e.target.matches('[data-key]')){ ackQuiet=false; document.getElementById('alarmBar').classList.remove('silent'); evaluateAndRender(); }
+});
+
+buildStandTables();
+document.getElementById('recDate').value = todayISO();
+paintHints();
+const draft = loadJSON(DRAFT_KEY, null);
+if(draft){
+  if(draft.meta?.shift && draft.meta.shift !== 'A' && draft.meta.shift !== 'B') draft.meta.shift = 'A';
+  applyRecord(draft);
+} else evaluateAndRender();
+if(!window.showDirectoryPicker) document.getElementById('folderStatus').textContent = 'Folder: use Chrome/Edge for folder save';
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+﻿Smart EMS & MIS — How to run (NO typing needed)
+===============================================
+Folder: Smart_EMS_MIS_Backup_20260802
+Coding by Amazad Ali · Version 1.0
+
+ONE-TIME on a new PC
+--------------------
+1) Install Python 3.10+ (tick "Add Python to PATH")
+2) Open this folder
+3) Double-click INSTALL_ONCE.bat   (installs packages)
+   OR once: pip install -r requirements.txt
+
+EVERY DAY (no CMD typing)
+-------------------------
+Double-click:  START_Smart_EMS.bat
+  → starts bridge
+  → opens Pro UI  http://localhost:5000/pro/
+  → keep the black window OPEN while using the app
+
+Or double-click: START_Classic_HMI.bat
+  → opens Classic HMI  http://localhost:5000/
+
+Do NOT only open the .html file — live data will not work without the bridge.
+
+Also read:
+  Smart_EMS_MIS_Step_by_Step_Explanation.docx
+  AI_PROMPT_TO_REBUILD.txt

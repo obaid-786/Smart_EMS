@@ -1,0 +1,2695 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>STEEL EMS — Sugna Sponge and Power Pvt Ltd</title>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* ── Steel Plant EMS — multinational control-room theme ─────────────────────
+   Dark charcoal · cyan trends · green status · dense KPI grid
+*/
+:root, html[data-theme="dark"]{
+  /* Lighter charcoal — readable labels, not pitch black */
+  --bg:#1c222b;
+  --bg-wash:#1c222b;
+  --panel:#252c36;
+  --surface:#222933;
+  --elevated:#2a323e;
+  --line:#3d4856;
+  --line2:#556274;
+  --ink:#f4f7fb;
+  --ink2:#d5dde7;
+  --muted:#a8b4c2;
+  --ok:#4ade80;
+  --ok-bg:rgba(74,222,128,.14);
+  --caution:#fbbf24;
+  --caution-bg:rgba(251,191,36,.14);
+  --alarm:#f87171;
+  --alarm-bg:rgba(248,113,113,.14);
+  --info:#38bdf8;
+  --info-bg:rgba(56,189,248,.14);
+  --live:#4ade80;
+  --nav:#151a22;
+  --nav-mid:#1a2029;
+  --nav-active:#0ea5e9;
+  --accent:#38bdf8;
+  --chart:#7dd3fc;
+  --chart-fill:rgba(125,211,252,.18);
+  --font:'Titillium Web',Segoe UI,ui-sans-serif,sans-serif;
+  --fm:'IBM Plex Mono',Consolas,ui-monospace,monospace;
+  --sw:268px;
+  --r:6px;
+  --r-sm:4px;
+  --shadow:0 1px 0 rgba(255,255,255,.04),0 8px 24px rgba(0,0,0,.28);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.36);
+  --hdr-h:28px;
+  --alarm-h:34px;
+  --tb-h:52px;
+  --focus:0 0 0 2px rgba(56,189,248,.4);
+}
+html[data-theme="light"]{
+  --bg:#e8e8e8; --bg-wash:#e8e8e8; --panel:#ececec; --surface:#f4f4f4; --elevated:#fff;
+  --line:#c5c5c5; --line2:#9a9a9a; --ink:#1a1a1a; --ink2:#3c3c3c; --muted:#6a6a6a;
+  --ok:#00843d; --ok-bg:rgba(0,132,61,.1); --caution:#c47a00; --caution-bg:rgba(196,122,0,.12);
+  --alarm:#c8102e; --alarm-bg:rgba(200,16,46,.1); --info:#0891b2; --info-bg:rgba(8,145,178,.1);
+  --live:#0891b2; --nav:#0e1217; --nav-mid:#151a21; --nav-active:#0891b2; --accent:#0891b2;
+  --chart:#0284c7; --chart-fill:rgba(2,132,199,.12);
+  --shadow:0 1px 3px rgba(0,0,0,.08); --shadow-lg:0 8px 20px rgba(0,0,0,.1);
+}
+.mes-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.mes-kicker{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);}
+.mes-hero h2{font-size:22px;margin:4px 0;font-weight:700;letter-spacing:-.01em;}
+.mes-badge{font-family:var(--fm);font-size:11px;font-weight:700;padding:5px 10px;border-radius:var(--r);border:1px solid var(--line);background:var(--ok-bg);color:var(--ok);}
+.mes-ai{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+.mes-ai-card{background:var(--elevated);border:1px solid var(--line);border-radius:var(--r);padding:12px;}
+.mes-report{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;font-family:var(--fm);font-size:11px;max-height:320px;overflow:auto;white-space:pre-wrap;}
+.mes-tabs{display:flex;gap:0;flex-wrap:wrap;margin-bottom:12px;padding:0;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);}
+.mes-tabs button{border:none;border-right:1px solid var(--line);background:transparent;color:var(--ink2);padding:9px 14px;border-radius:0;font-weight:600;font-size:13px;cursor:pointer;}
+.mes-tabs button:last-child{border-right:none;}
+.mes-tabs button:hover{background:var(--surface);color:var(--ink);}
+.mes-tabs button.active{background:var(--info);color:#041016;}
+.mes-flow{padding-bottom:8px;}
+.auth-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.auth-row input{padding:5px 8px;border:1px solid var(--line2);border-radius:var(--r);background:var(--surface);color:var(--ink);font-family:var(--fm);font-size:12px;width:100px;}
+@media(max-width:900px){.mes-ai{grid-template-columns:1fr;}.mes-tabs button{flex:1 1 auto;font-size:12px;padding:7px 8px;}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;}
+body{
+  font-family:var(--font);background:var(--bg);
+  color:var(--ink);line-height:1.45;min-height:100vh;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+html[data-theme="dark"] .muted,
+html[data-theme="dark"] .prod-formula,
+html[data-theme="dark"] .field label,
+html[data-theme="dark"] .sec h2,
+html[data-theme="dark"] .kpi-lbl,
+html[data-theme="dark"] .kpi-sub,
+html[data-theme="dark"] .hmd-name,
+html[data-theme="dark"] .hmd-delta,
+html[data-theme="dark"] .tb-sub,
+html[data-theme="dark"] .tb-meta{color:var(--muted);}
+html[data-theme="dark"] .card-hd h3,
+html[data-theme="dark"] .hmd-count,
+html[data-theme="dark"] tbody td{color:var(--ink);}
+html[data-theme="dark"] .btn{color:var(--ink);background:var(--surface);}
+html[data-theme="dark"] .btn:hover{color:#fff;border-color:var(--accent);}
+html[data-theme="dark"] input,
+html[data-theme="dark"] select{color:var(--ink);background:var(--surface);caret-color:var(--accent);}
+html[data-theme="dark"] input::placeholder{color:#8b98a8;}
+button,select,input{font:inherit;color:inherit;}
+:focus-visible{outline:none;box-shadow:var(--focus);}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-thumb{background:#3d4a57;border-radius:6px;}
+::-webkit-scrollbar-thumb:hover{background:#556270;}
+::-webkit-scrollbar-track{background:var(--bg);}
+
+.shell{display:flex;min-height:100vh;position:relative;z-index:1;}
+.nav-scrim{
+  display:none;position:fixed;inset:0;background:rgba(16,22,32,.48);z-index:190;
+  backdrop-filter:blur(2px);
+}
+body.nav-open .nav-scrim{display:block;}
+
+/* ── Sidebar — always dark navy + light text (not page theme tokens) ───── */
+.sidebar{
+  --sb-bg:#141a22;
+  --sb-line:#2f3a48;
+  --sb-text:#f1f5f9;
+  --sb-text2:#dce4ee;
+  --sb-muted:#b6c2d0;
+  --sb-accent:#7dd3fc;
+  --sb-card:#1e2733;
+  width:var(--sw);background:var(--sb-bg);
+  color:var(--sb-text2);position:fixed;inset:0 auto 0 0;z-index:200;
+  display:flex;flex-direction:column;border-right:1px solid var(--sb-line);
+  transition:transform .2s ease;
+}
+.sb-brand{
+  padding:16px 14px 14px;border-bottom:1px solid var(--sb-line);
+  background:linear-gradient(180deg,rgba(56,189,248,.12),transparent);
+}
+.sb-brand-row{display:flex;align-items:center;gap:12px;}
+.sb-mark{
+  width:40px;height:40px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(145deg,#38bdf8,#0284c7);
+  display:grid;place-items:center;color:#041016;font-family:var(--font);
+  font-size:10px;font-weight:700;letter-spacing:.02em;
+  box-shadow:0 0 20px rgba(56,189,248,.3);
+}
+.sb-kicker{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--sb-muted);font-family:var(--fm);font-weight:600;}
+.sb-name{
+  font-size:12px;font-weight:700;color:#fff;margin-top:3px;letter-spacing:0;
+  line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:190px;
+}
+.sb-asset{
+  margin:12px 10px 0;padding:10px 12px;
+  background:var(--sb-card);border:1px solid var(--sb-line);
+  border-radius:var(--r);position:relative;
+}
+.sb-asset::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#4ade80;
+}
+.sb-asset-lbl{font-size:10px;color:var(--sb-muted);letter-spacing:.12em;text-transform:uppercase;font-family:var(--fm);font-weight:600;}
+.sb-asset-name{font-size:13px;font-weight:700;color:#fff;margin-top:3px;}
+.sb-asset-meta{font-size:11px;color:var(--sb-text2);font-family:var(--fm);margin-top:2px;}
+.sb-nav{flex:1;padding:10px 8px;overflow:auto;}
+.nav-lvl{
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--sb-muted);
+  padding:14px 10px 5px;font-family:var(--fm);font-weight:700;
+}
+.nav-lvl:first-child{padding-top:4px;}
+.nav-group{margin:4px 0;}
+.nav-group-hd{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;padding:9px 10px;border-radius:var(--r);
+  background:rgba(56,189,248,.16);border:1px solid rgba(125,211,252,.35);
+  color:#fff;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  font-family:var(--fm);cursor:pointer;text-align:left;
+}
+.nav-group-hd:hover{background:rgba(56,189,248,.24);color:#fff;}
+.nav-group-hd .chev{
+  font-size:9px;color:var(--sb-accent);transition:transform .15s ease;flex-shrink:0;
+}
+.nav-group.open .nav-group-hd .chev{transform:rotate(90deg);}
+.nav-group-body{display:none;padding:2px 0;}
+.nav-group.open .nav-group-body{display:block;}
+.nav-sublvl{
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--sb-accent);
+  padding:8px 10px 3px 16px;font-family:var(--fm);font-weight:700;
+}
+.nav-group .nav-item{padding-left:18px;}
+.nav-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);
+  color:var(--sb-text2);font-size:13.5px;font-weight:600;cursor:pointer;
+  border:1px solid transparent;margin-bottom:1px;
+  transition:background .1s,color .1s;
+  position:relative;
+}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.nav-item.active{
+  background:rgba(56,189,248,.2);color:var(--sb-accent);border-color:rgba(125,211,252,.4);
+  box-shadow:inset 3px 0 0 var(--sb-accent);
+}
+.nav-badge{
+  margin-left:auto;font-size:10px;font-family:var(--fm);background:var(--alarm);color:#fff;
+  padding:1px 6px;border-radius:99px;min-width:18px;text-align:center;font-weight:700;
+}
+.nav-badge.hide{display:none;}
+.sb-foot{
+  padding:10px 12px;border-top:1px solid var(--sb-line);
+  font-size:11px;color:var(--sb-muted);font-family:var(--fm);font-weight:600;
+  display:flex;justify-content:space-between;gap:8px;
+}
+
+.main{margin-left:var(--sw);flex:1;min-width:0;display:flex;flex-direction:column;}
+
+/* ── Supply strip — calm until live/alarm ────────────────────────────────── */
+.hdr-flow{
+  position:sticky;top:0;z-index:130;height:var(--hdr-h);background:#0a0e13;
+  border-bottom:1px solid var(--line);overflow:hidden;display:flex;align-items:center;
+}
+.hdr-flow-track{
+  position:absolute;inset:0;pointer-events:none;opacity:0;
+  background-size:220% 100%;
+}
+.hdr-flow.on .hdr-flow-track{
+  opacity:.55;
+  background:linear-gradient(90deg,transparent 0%,rgba(31,107,58,.12) 40%,rgba(74,180,120,.35) 50%,rgba(31,107,58,.12) 60%,transparent 100%);
+  animation:hdrSweep 4.5s linear infinite;
+}
+.hdr-flow.alarm .hdr-flow-track{
+  opacity:.85;
+  background:linear-gradient(90deg,transparent 0%,rgba(185,28,28,.2) 35%,rgba(248,113,113,.55) 50%,rgba(185,28,28,.2) 65%,transparent 100%);
+  animation:hdrSweep 1.4s linear infinite;
+}
+@keyframes hdrSweep{0%{background-position:120% 0;}100%{background-position:-120% 0;}}
+.hdr-flow-inner{
+  position:relative;z-index:1;width:100%;padding:0 18px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+}
+.hdr-flow-label{
+  font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7d8a9c;
+  min-width:88px;
+}
+.hdr-flow.on .hdr-flow-label{color:#9ed4b0;}
+.hdr-flow.alarm .hdr-flow-label{color:#f5a8a8;}
+.hdr-flow-line{
+  flex:1;height:2px;border-radius:99px;background:#2a3548;position:relative;overflow:hidden;max-width:480px;
+}
+.hdr-flow-line::after{content:none;}
+.hdr-flow.on .hdr-flow-line{background:rgba(31,107,58,.35);}
+.hdr-flow.on .hdr-flow-line::after{
+  content:'';position:absolute;top:0;left:0;height:100%;width:22%;
+  background:linear-gradient(90deg,transparent,#5ecf8a,transparent);
+  animation:hdrDash 2.4s linear infinite;
+}
+.hdr-flow.alarm .hdr-flow-line{background:rgba(185,28,28,.35);}
+.hdr-flow.alarm .hdr-flow-line::after{
+  content:'';position:absolute;top:0;left:0;height:100%;width:28%;
+  background:linear-gradient(90deg,transparent,#f87171,transparent);
+  animation:hdrDash .7s linear infinite;
+}
+@keyframes hdrDash{0%{transform:translateX(-120%);}100%{transform:translateX(480%);}}
+.hdr-flow-power{
+  font-family:var(--fm);font-size:12px;font-weight:700;color:#c8d0dc;min-width:84px;text-align:right;
+}
+.hdr-flow.on .hdr-flow-power{color:#c5e8d2;}
+.hdr-flow.alarm .hdr-flow-power{color:#fecaca;}
+.hdr-flow-freq{
+  font-family:var(--fm);font-size:12px;font-weight:700;color:#c8d0dc;
+  padding:2px 9px;border-radius:var(--r-sm);border:1px solid #334155;background:rgba(10,16,26,.4);
+  min-width:74px;text-align:center;
+}
+.hdr-flow.on .hdr-flow-freq{color:#c5e8d2;border-color:rgba(94,207,138,.3);}
+.hdr-flow.alarm .hdr-flow-freq{color:#fecaca;border-color:rgba(248,113,113,.4);}
+.hdr-flow-freq span{font-size:10px;font-weight:600;opacity:.7;margin-left:2px;}
+.hdr-flow-metrics{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+
+.alarm-banner{
+  min-height:var(--alarm-h);display:flex;align-items:center;gap:12px;padding:7px 18px;
+  background:#4a5566;color:#f3f4f6;border-bottom:2px solid #3a4454;
+  position:sticky;top:var(--hdr-h);z-index:120;
+}
+.alarm-banner.has-alarm{background:#8b1e1e;border-bottom-color:#a32020;}
+.alarm-banner.has-caution:not(.has-alarm){background:#9a4a0c;border-bottom-color:#b45309;}
+.alarm-count{font-family:var(--fm);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+.alarm-msg{flex:1;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.alarm-ack{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;
+  padding:5px 12px;border-radius:var(--r-sm);cursor:pointer;font-size:12px;font-weight:600;
+  transition:background .12s;
+}
+.alarm-ack:hover{background:rgba(255,255,255,.22);}
+
+.topbar{
+  background:rgba(37,44,54,.96);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);height:var(--tb-h);padding:0 16px 0 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:calc(var(--hdr-h) + var(--alarm-h));z-index:110;
+}
+html[data-theme="dark"] .tb-title{color:#fff;letter-spacing:.02em;}
+html[data-theme="dark"] .status-pill.demo{color:#7dd3fc;border-color:rgba(125,211,252,.45);}
+html[data-theme="dark"] .auth-row input{background:var(--surface);color:var(--ink);border-color:var(--line2);}
+html[data-theme="light"] .topbar{background:#fff;}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0;}
+.tb-menu{
+  display:none;width:36px;height:36px;border-radius:var(--r-sm);
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+}
+.tb-menu svg{width:18px;height:18px;}
+.tb-titles{min-width:0;}
+.tb-title{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:.01em;line-height:1.15;text-transform:uppercase;}
+.tb-sub{font-size:11px;color:var(--muted);font-family:var(--fm);margin-top:1px;}
+.tb-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--r-sm);
+  font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-family:var(--fm);
+  border:1px solid;
+}
+.status-pill.live{background:var(--ok-bg);color:var(--ok);border-color:rgba(31,107,58,.32);}
+.status-pill.demo{background:var(--info-bg);color:var(--info);border-color:rgba(26,79,124,.28);}
+.status-pill.off{background:var(--alarm-bg);color:var(--alarm);border-color:rgba(185,28,28,.28);}
+.status-dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+.status-pill.live .status-dot{animation:pulse 2.2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.tb-clock{
+  font-family:var(--fm);font-size:13px;font-weight:600;color:var(--ink2);
+  min-width:76px;text-align:right;padding:4px 8px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+}
+.tb-meta{font-family:var(--fm);font-size:11px;color:var(--muted);}
+
+.page{padding:12px 14px 28px;flex:1;max-width:1600px;}
+.view{display:none;}
+.view.active{display:block;}
+
+/* OEM process-screen layout (DE / multinational HMI) */
+.oem-header{
+  display:flex;align-items:stretch;justify-content:space-between;gap:0;
+  background:linear-gradient(90deg,#151b23,#1e252e);color:var(--ink);
+  border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.oem-header-title{padding:12px 16px;min-width:240px;border-right:1px solid var(--line);}
+.oem-header-title .k{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-family:var(--fm);}
+.oem-header-title .t{font-size:16px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-top:3px;}
+.oem-header-params{
+  flex:1;display:grid;grid-template-columns:repeat(4,1fr);
+}
+.oem-hp{
+  padding:10px 14px;border-right:1px solid var(--line);
+  display:flex;flex-direction:column;justify-content:center;min-width:0;background:var(--elevated);
+}
+.oem-hp:last-child{border-right:none;}
+.oem-hp .l{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);}
+.oem-hp .v{font-family:var(--fm);font-size:20px;font-weight:700;margin-top:3px;white-space:nowrap;color:var(--chart);}
+.oem-hp .u{font-size:11px;color:var(--muted);margin-left:4px;font-weight:600;}
+.oem-band{
+  background:var(--panel);color:#7dd3fc;padding:7px 14px;font-size:11px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;font-family:var(--fm);
+  border:1px solid var(--line);border-radius:var(--r) var(--r) 0 0;margin:12px 0 0;
+}
+.oem-band + .oem-panel,.oem-band + .param-matrix,.oem-band + .phase-grid,.oem-band + .kpi-grid,
+.oem-band + .plant-hero,.oem-band + .hero-grid,.oem-band + .tbl-wrap,.oem-band + .phase-tag-picker{
+  margin-top:0;border-top:none;border-radius:0 0 var(--r) var(--r);
+}
+.oem-panel{
+  background:var(--elevated);border:1px solid var(--line);border-top:none;padding:0;margin-bottom:10px;
+}
+.param-matrix{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  background:var(--elevated);border:1px solid var(--line);margin-bottom:10px;
+}
+.param-matrix.cols-3{grid-template-columns:repeat(3,1fr);}
+.param-matrix.cols-2{grid-template-columns:repeat(2,1fr);}
+.param-cell{
+  display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;
+  padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  min-height:56px;background:var(--elevated);
+}
+.param-cell:nth-child(4n){border-right:none;}
+.param-matrix.cols-3 .param-cell:nth-child(3n){border-right:none;}
+.param-matrix.cols-3 .param-cell:nth-child(4n){border-right:1px solid var(--line);}
+.param-cell .pl{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-family:var(--fm);}
+.param-cell .pv{font-family:var(--fm);font-size:22px;font-weight:700;color:var(--chart);text-align:right;}
+.param-cell .pu{font-family:var(--fm);font-size:11px;color:var(--accent);font-weight:600;min-width:32px;}
+.param-cell.warn{background:var(--caution-bg);}
+.param-cell.warn .pv{color:var(--caution);}
+.param-cell.alarm{background:var(--alarm-bg);}
+.param-cell.alarm .pv{color:var(--alarm);}
+.faceplate{
+  background:var(--elevated);border:1px solid var(--line);display:flex;flex-direction:column;
+}
+.faceplate-hd{
+  background:var(--panel);color:var(--ink);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--fm);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  border-bottom:1px solid var(--line);
+}
+.faceplate-hd .st{font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid var(--line);}
+.faceplate-hd .st.ok{background:var(--ok-bg);border-color:rgba(34,197,94,.35);color:var(--ok);}
+.faceplate-hd .st.warn{background:var(--caution-bg);border-color:rgba(245,158,11,.35);color:var(--caution);}
+.faceplate-hd .st.alarm{background:var(--alarm-bg);border-color:rgba(239,68,68,.35);color:var(--alarm);}
+.faceplate-row{
+  display:grid;grid-template-columns:1.2fr 1fr .5fr;gap:6px;align-items:center;
+  padding:8px 12px;border-bottom:1px solid var(--line);font-size:12px;
+}
+.faceplate-row:nth-child(even){background:rgba(255,255,255,.02);}
+.faceplate-row:last-child{border-bottom:none;}
+.faceplate-row .fk{color:var(--muted);font-weight:600;}
+.faceplate-row .fk small{display:block;font-size:9px;font-family:var(--fm);font-weight:500;opacity:.8;}
+.faceplate-row .fv{font-family:var(--fm);font-weight:700;text-align:right;color:var(--ink);}
+.faceplate-row .fu{font-family:var(--fm);font-size:10px;color:var(--accent);text-align:right;}
+@media(max-width:1100px){
+  .oem-header{flex-direction:column;}
+  .oem-header-params{grid-template-columns:repeat(2,1fr);border-left:none;border-top:1px solid rgba(255,255,255,.12);}
+  .param-matrix{grid-template-columns:repeat(2,1fr);}
+  .param-cell:nth-child(2n){border-right:none;}
+  .param-cell:nth-child(4n){border-right:1px solid var(--line);}
+}
+@media(max-width:700px){
+  .oem-header-params,.param-matrix,.param-matrix.cols-3{grid-template-columns:1fr;}
+  .param-cell{border-right:none !important;}
+}
+
+.ctrl-row{
+  display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;
+  background:var(--elevated);border:1px solid var(--line);border-radius:var(--r);
+  padding:10px 12px;margin-bottom:12px;
+}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);}
+.field select,.field input{
+  padding:7px 10px;border:1px solid var(--line2);border-radius:var(--r-sm);
+  background:var(--surface);color:var(--ink);font-family:var(--fm);font-size:12.5px;min-width:128px;
+  transition:border-color .12s,box-shadow .12s;
+}
+.field select:hover,.field input:hover{border-color:var(--accent);}
+.field select option{background:var(--elevated);color:var(--ink);}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);
+  border:1px solid var(--line2);background:var(--elevated);color:var(--ink2);
+  font-size:13px;font-weight:600;cursor:pointer;transition:background .1s,border-color .1s,color .1s;
+  letter-spacing:.01em;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent);background:var(--surface);}
+.btn:active{background:var(--panel);}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn-pri{background:var(--accent);border-color:var(--accent);color:#041016;}
+.btn-pri:hover{background:#67e8f9;color:#041016;border-color:#67e8f9;}
+.btn-dark{background:#0a0e13;border-color:var(--line);color:var(--ink);}
+.btn-dark:hover{background:#000;color:#fff;border-color:var(--line2);}
+.spacer{margin-left:auto;}
+
+.sec{margin:16px 0 8px;display:flex;align-items:center;gap:10px;}
+.sec h2{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);white-space:nowrap;}
+.sec::after{content:'';flex:1;height:1px;background:var(--line);}
+
+/* KPI tiles */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.kpi{
+  background:var(--elevated);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow);
+  border-top:2px solid var(--accent);
+}
+.kpi.warn{border-top-color:var(--caution);background:var(--caution-bg);}
+.kpi.alarm{border-top-color:var(--alarm);background:var(--alarm-bg);}
+.kpi-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);}
+.kpi-val{font-family:var(--fm);font-size:28px;font-weight:700;color:var(--chart);line-height:1.05;margin-top:6px;letter-spacing:-.02em;}
+.kpi.alarm .kpi-val{color:var(--alarm);}
+.kpi.warn .kpi-val{color:var(--caution);}
+.kpi-unit{font-size:12px;color:var(--accent);font-family:var(--fm);margin-left:4px;}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--fm);}
+.bar{height:3px;background:rgba(255,255,255,.08);border-radius:99px;margin-top:10px;overflow:hidden;}
+.bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--chart),var(--accent));border-radius:99px;transition:width .3s ease;}
+.kpi.warn .bar > i{background:var(--caution);}
+.kpi.alarm .bar > i{background:var(--alarm);}
+.bar-marks{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:var(--fm);margin-top:3px;}
+
+.hero-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:0;margin-bottom:14px;border:1px solid var(--line);border-radius:0 0 var(--r) var(--r);overflow:hidden;}
+.hero-grid > .card{border:none;border-right:1px solid var(--line);border-radius:0;box-shadow:none;}
+.hero-grid > .card:last-child{border-right:none;}
+.card{
+  background:var(--elevated);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);
+}
+.card-hd{
+  display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-bottom:1px solid var(--line);background:var(--panel);color:var(--ink);
+}
+.card-hd h3{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-family:var(--fm);}
+.card-bd{padding:12px 14px;}
+.tag{font-size:10px;font-family:var(--fm);font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;border:1px solid;}
+.tag.ok{color:var(--ok);border-color:rgba(31,107,58,.32);background:var(--ok-bg);}
+.tag.off{color:var(--muted);border-color:var(--line);background:var(--panel);}
+.tag.alarm{color:var(--alarm);border-color:rgba(185,28,28,.32);background:var(--alarm-bg);}
+
+.sld{width:100%;height:140px;background:linear-gradient(180deg,#222933,#1a2029);border:1px solid var(--line);border-radius:var(--r);}
+.sld-line{stroke:#7d8b99;stroke-width:3;fill:none;}
+.sld-line.on{stroke:var(--ok);stroke-dasharray:8 6;animation:flow 1.2s linear infinite;}
+@keyframes flow{to{stroke-dashoffset:-28;}}
+.sld-node{fill:#2a323e;stroke:#8b98a8;stroke-width:2;}
+.sld-node.on{stroke:var(--ok);fill:rgba(74,222,128,.12);}
+.sld-icon{stroke:#a8b4c2;stroke-width:1.8;fill:none;}
+.sld-icon.on{stroke:var(--ok);}
+.sld-lbl{font-family:var(--font);font-size:12px;font-weight:600;fill:#e8eef6;}
+.sld-val{font-family:var(--fm);font-size:15px;font-weight:700;fill:var(--chart);letter-spacing:-.02em;}
+.sld-val.on{fill:var(--ok);}
+.sld-val-sm{font-family:var(--fm);font-size:13px;font-weight:700;fill:#f4f7fb;}
+.sld-val-sm.on{fill:var(--ok);}
+.sld-sub{font-family:var(--fm);font-size:10px;fill:#a8b4c2;}
+html[data-theme="light"] .sld{background:linear-gradient(180deg,#f7f8fa,#eef1f5);}
+html[data-theme="light"] .sld-node{fill:#f7f8fa;stroke:#8b93a0;}
+html[data-theme="light"] .sld-val{fill:var(--ink);}
+html[data-theme="light"] .sld-val.on,html[data-theme="light"] .sld-val-sm.on{fill:#166534;}
+
+.flow-top{
+  background:var(--elevated);border-bottom:1px solid var(--line);
+  padding:8px 18px 10px;
+}
+.flow-top .card{border:none;border-radius:0;box-shadow:none;}
+.flow-top .card-hd{padding:4px 2px 6px;background:transparent;border-bottom:none;}
+.flow-top .card-bd{padding:0;}
+.flow-top .sld{height:148px;border:none;background:transparent;border-radius:0;}
+
+.spark-wrap{height:150px;position:relative;}
+.energy-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.energy-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;}
+.energy-box .lbl{font-size:10.5px;color:var(--muted);font-family:var(--fm);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+.energy-box .val{font-family:var(--fm);font-size:24px;font-weight:700;margin-top:6px;color:var(--chart);}
+.energy-box .unit{font-size:11px;color:var(--accent);}
+
+.phase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border:none;margin-bottom:10px;}
+.phase{background:var(--elevated);border:1px solid var(--line);border-radius:var(--r);padding:0;box-shadow:var(--shadow);}
+.phase:last-child{border-right:1px solid var(--line);}
+.phase.warn{background:var(--caution-bg);}
+.phase.alarm{background:var(--alarm-bg);}
+.phase-hd{display:none;}
+.phase-name{font-family:var(--fm);font-size:12px;font-weight:700;}
+.phase-row{display:grid;grid-template-columns:1.2fr 1fr;gap:6px;padding:7px 10px;border-bottom:1px solid var(--line);font-size:12px;}
+.phase-row:nth-child(even){background:rgba(255,255,255,.02);}
+.phase-row:last-child{border-bottom:none;}
+.phase-row .k{color:var(--muted);font-weight:600;}
+.phase-row .v{font-family:var(--fm);font-weight:700;text-align:right;}
+.phase-tag-picker{
+  background:var(--elevated);border:1px solid var(--line);border-radius:0 0 var(--r) var(--r);
+  padding:10px 12px;margin-bottom:0;
+}
+.phase-tag-picker.is-collapsed .ptp-body{display:none;}
+.phase-tag-picker.is-collapsed{padding:10px 14px;}
+.phase-tag-picker .ptp-hd{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;
+}
+.phase-tag-picker.is-collapsed .ptp-hd{margin-bottom:0;}
+.phase-tag-picker .ptp-hd h3{margin:0;font-size:13px;font-weight:700;}
+.phase-tag-hint{font-size:11px;color:var(--muted);font-family:var(--fm);}
+.phase-tag-table{width:100%;border-collapse:collapse;font-size:12px;}
+.phase-tag-table th{
+  text-align:left;padding:7px 8px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-family:var(--fm);border-bottom:1px solid var(--line);background:var(--panel);
+}
+.phase-tag-table td{padding:7px 8px;border-bottom:1px dashed var(--line);vertical-align:middle;}
+.phase-tag-table tr:last-child td{border-bottom:none;}
+.phase-tag-table tr.on{background:var(--ok-bg);}
+.phase-tag-table tr{cursor:pointer;}
+.phase-tag-table tr:hover{background:var(--surface);}
+.phase-tag-table .tag-name{font-family:var(--fm);font-size:11px;color:var(--ink2);}
+.phase-tag-table input{accent-color:var(--info);width:15px;height:15px;}
+.phase-row .k small{display:block;font-size:10px;color:var(--muted);font-family:var(--fm);font-weight:500;margin-top:1px;}
+.phase-hd .phase-sub{font-size:10px;color:var(--muted);font-family:var(--fm);font-weight:500;}
+
+.quality-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:0;border:none;}
+.quality-grid .kpi{margin:0;}
+
+.tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--elevated);box-shadow:var(--shadow);}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+thead th{
+  background:var(--panel);padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);
+  border-bottom:1px solid var(--line);white-space:nowrap;
+}
+tbody td{padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--fm);color:var(--ink2);vertical-align:middle;}
+tbody tr:hover{background:rgba(255,255,255,.03);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr.row-alarm{background:rgba(239,68,68,.14);}
+tbody tr.row-caution{background:rgba(245,158,11,.12);}
+.sev{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+.sev-alarm{background:var(--alarm-bg);color:var(--alarm);}
+.sev-caution{background:var(--caution-bg);color:var(--caution);}
+.sev-info{background:var(--info-bg);color:var(--info);}
+
+.chart-box{height:280px;background:#151c26;border-radius:var(--r);padding:12px;border:1px solid #263040;}
+.muted{color:var(--muted);font-family:var(--fm);font-size:12.5px;}
+.empty{padding:32px;text-align:center;color:var(--muted);font-family:var(--fm);}
+
+.report-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.rs{background:var(--elevated);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:inset 3px 0 0 #6b7585,var(--shadow);}
+.rs .l{font-size:10.5px;color:var(--muted);font-family:var(--fm);text-transform:uppercase;letter-spacing:.07em;font-weight:700;}
+.rs .v{font-family:var(--fm);font-size:23px;font-weight:600;margin-top:6px;}
+.rs .s{font-size:11px;color:var(--muted);font-family:var(--fm);margin-top:3px;}
+
+/* Plant overview — area cards */
+.plant-hero{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:10px;
+  border:1px solid var(--line);border-radius:0 0 var(--r) var(--r);overflow:hidden;
+  background:var(--elevated);
+}
+.plant-area{
+  background:var(--elevated);border:none;border-right:1px solid var(--line);border-radius:0;padding:0;
+  position:relative;overflow:hidden;min-height:0;box-shadow:none;
+}
+.plant-area:last-child{border-right:none;}
+.plant-area:hover{transform:none;}
+.plant-area::before,.plant-area::after{display:none;}
+.plant-area.ccm,.plant-area.rm,.plant-area.ems{background:var(--elevated);}
+.plant-area-kicker{
+  background:rgba(34,211,238,.08);color:var(--accent);font-size:9px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;font-family:var(--fm);padding:6px 12px;border-bottom:1px solid var(--line);
+}
+.plant-area-title{
+  font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.06em;text-transform:uppercase;
+  padding:10px 12px 0;border-bottom:1px solid var(--line);padding-bottom:8px;margin:0;
+}
+.plant-area-metrics{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:0;}
+.plant-area-metrics > div{padding:10px 12px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);}
+.plant-area-metrics > div:nth-child(2n){border-right:none;}
+.pam-lbl{font-size:9px;color:var(--muted);font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
+.pam-val{font-family:var(--fm);font-size:17px;font-weight:700;color:var(--ink);line-height:1.15;margin-top:2px;}
+.pam-unit{font-size:10px;color:var(--accent);font-weight:600;margin-left:3px;}
+.plant-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:10px 0;border:none;}
+.plant-chip{
+  background:var(--elevated);border:1px solid var(--line);border-radius:var(--r);
+  padding:10px 8px;text-align:center;box-shadow:var(--shadow);
+}
+.plant-chip:last-child{border-right:1px solid var(--line);}
+.plant-chip .c-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);}
+.plant-chip .c-val{font-family:var(--fm);font-size:15px;font-weight:700;margin-top:3px;color:var(--chart);}
+.plant-chip .c-sub{font-size:9px;color:var(--muted);font-family:var(--fm);margin-top:2px;}
+.rpt-banner{
+  background:linear-gradient(135deg,#1a2230 0%,#243044 55%,#1a4f7c 140%);
+  color:#e8eef8;border-radius:10px;padding:16px 18px;margin-bottom:16px;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;
+  box-shadow:var(--shadow-lg);
+}
+.rpt-banner h2{font-size:16px;font-weight:700;letter-spacing:.02em;margin:0;}
+.rpt-banner p{font-size:12px;color:#9aabc0;font-family:var(--fm);margin:5px 0 0;}
+.rpt-block{margin-bottom:18px;}
+.rpt-block-hd{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;
+  border-bottom:2px solid var(--line);padding-bottom:7px;
+}
+.rpt-block-hd h3{font-size:12.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-family:var(--fm);color:var(--ink2);margin:0;}
+.rpt-block-hd .badge{font-size:11px;font-family:var(--fm);padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);background:var(--elevated);}
+.mega-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.mega{
+  background:var(--elevated);border:1px solid var(--line);border-radius:10px;padding:15px;
+  box-shadow:inset 3px 0 0 #6b7585,var(--shadow);
+}
+.mega.accent-ok{box-shadow:inset 3px 0 0 var(--ok),var(--shadow);}
+.mega.accent-warn{box-shadow:inset 3px 0 0 var(--caution),var(--shadow);}
+.mega.accent-info{box-shadow:inset 3px 0 0 var(--info),var(--shadow);}
+.mega.accent-teal{box-shadow:inset 3px 0 0 var(--live),var(--shadow);}
+.mega .m-lbl{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);}
+.mega .m-val{font-family:var(--fm);font-size:27px;font-weight:700;color:var(--chart);margin-top:6px;letter-spacing:-.02em;}
+.mega .m-sub{font-size:11px;color:var(--muted);font-family:var(--fm);margin-top:4px;}
+@media(max-width:1100px){
+  .plant-hero{grid-template-columns:1fr;}
+  .plant-area{border-right:none;border-bottom:1px solid var(--line);}
+  .plant-area:last-child{border-bottom:none;}
+  .mega-grid{grid-template-columns:1fr 1fr;}
+  .plant-strip{grid-template-columns:repeat(3,1fr);}
+  .phase-grid{grid-template-columns:1fr;}
+  .phase,.faceplate{border-right:none;border-bottom:1px solid var(--line);}
+}
+@media(max-width:860px){
+  .mega-grid,.plant-strip{grid-template-columns:1fr;}
+}
+.prod-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.prod-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;margin-bottom:14px;}
+.prod-status{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:var(--r-sm);font-family:var(--fm);font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid;}
+.prod-status.run{background:var(--ok-bg);color:var(--ok);border-color:rgba(31,107,58,.32);}
+.prod-status.idle{background:var(--caution-bg);color:var(--caution);border-color:rgba(168,87,5,.32);}
+.prod-status.stop{background:var(--panel);color:var(--muted);border-color:var(--line);}
+.prod-status.alarm{background:var(--alarm-bg);color:var(--alarm);border-color:rgba(185,28,28,.32);}
+.prod-formula{font-size:12px;color:var(--muted);font-family:var(--fm);line-height:1.55;margin-top:8px;}
+.hmd-line{display:flex;gap:8px;overflow-x:auto;padding:10px 0 6px;}
+.hmd-node{
+  min-width:112px;background:var(--elevated);border:1px solid var(--line);border-radius:var(--r);
+  padding:12px 10px;text-align:center;flex-shrink:0;box-shadow:var(--shadow);
+}
+.hmd-node.loss{border-color:rgba(185,28,28,.5);box-shadow:inset 3px 0 0 var(--alarm),var(--shadow);}
+.hmd-node.ok{border-color:rgba(31,107,58,.4);box-shadow:inset 3px 0 0 var(--ok),var(--shadow);}
+.hmd-name{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-family:var(--fm);}
+.hmd-count{font-family:var(--fm);font-size:23px;font-weight:700;margin-top:6px;color:var(--ink);}
+.hmd-delta{font-size:11px;font-family:var(--fm);margin-top:4px;color:var(--muted);}
+.hmd-node.live{outline:2px solid rgba(13,110,102,.45);outline-offset:0;}
+.hmd-node.live .hmd-name{color:var(--live);}
+.hmd-arrow{align-self:center;color:var(--muted);font-family:var(--fm);font-size:15px;flex-shrink:0;opacity:.7;}
+
+/* Mill pass-line · billet animation (HMD-driven) */
+.mill-pass{
+  background:linear-gradient(180deg,#222933 0%,#2a323e 55%,#1e2530 100%);
+  border:1px solid var(--line);border-radius:var(--r);padding:12px 14px 14px;margin-bottom:12px;
+  position:relative;overflow:hidden;
+}
+.mill-pass::before{
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.4;
+  background:repeating-linear-gradient(90deg,transparent 0 18px,rgba(255,255,255,.03) 18px 19px);
+}
+.mill-pass-hd{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;position:relative;z-index:1;
+}
+.mill-pass-hd h3{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-family:var(--fm);color:var(--ink);margin:0;}
+.mill-pass-meta{font-family:var(--fm);font-size:11px;color:var(--ink2);}
+.mill-pass-meta .on{color:var(--ok);font-weight:700;}
+.mill-track{
+  position:relative;height:168px;z-index:1;
+  border:1px solid var(--line2);border-radius:6px;background:#1a2029;
+  overflow:hidden;
+}
+.mill-floor{
+  position:absolute;left:0;right:0;top:78px;height:52px;
+  background:linear-gradient(180deg,#2a3340,#222933 40%,#1a2029);
+  border-top:1px solid #4a5564;border-bottom:1px solid #4a5564;
+}
+.mill-rollers{
+  position:absolute;left:0;right:0;top:92px;height:22px;display:flex;gap:6px;padding:0 8px;opacity:.85;
+}
+.mill-rollers i{
+  flex:1;height:100%;border-radius:3px;
+  background:linear-gradient(180deg,#4a5564,#2a3340 45%,#1a222c);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  animation:rollIdle 1.2s linear infinite;
+}
+.mill-track.running .mill-rollers i{animation-duration:.45s;}
+@keyframes rollIdle{0%{filter:brightness(1);}50%{filter:brightness(1.15);}100%{filter:brightness(1);}}
+.mill-stands{
+  position:absolute;inset:0;display:grid;grid-template-columns:repeat(8,1fr);gap:0;padding:8px 6px 0;
+}
+.mill-stand{
+  position:relative;display:flex;flex-direction:column;align-items:center;min-width:0;
+}
+.mill-stand .ms-lbl{
+  font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:#c8d2de;text-align:center;line-height:1.2;max-width:100%;padding:0 2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mill-stand .ms-house{
+  margin-top:6px;width:70%;max-width:54px;height:54px;position:relative;
+  background:linear-gradient(180deg,#3d4856,#2a323e);
+  border:1px solid #5a6574;border-radius:3px 3px 0 0;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);
+}
+.mill-stand .ms-house::before,.mill-stand .ms-house::after{
+  content:'';position:absolute;left:12%;right:12%;height:7px;border-radius:2px;
+  background:linear-gradient(90deg,#6b7585,#3d4a57);
+  box-shadow:0 0 0 1px #111;
+}
+.mill-stand .ms-house::before{top:14px;}
+.mill-stand .ms-house::after{bottom:14px;}
+.mill-stand .ms-gap{
+  position:absolute;left:18%;right:18%;top:50%;height:5px;transform:translateY(-50%);
+  background:#0a0d12;border-top:1px solid #111;border-bottom:1px solid #3d4a57;
+}
+.mill-stand .ms-eye{
+  position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;
+  background:#3d4a57;box-shadow:0 0 0 1px #111;
+}
+.mill-stand.sensing .ms-eye{
+  background:var(--ok);box-shadow:0 0 10px rgba(34,197,94,.85),0 0 0 1px rgba(34,197,94,.4);
+  animation:eyeBlink .5s ease-in-out infinite;
+}
+.mill-stand.sensing .ms-house{
+  border-color:rgba(34,197,94,.55);
+  box-shadow:0 0 16px rgba(34,197,94,.18),inset 0 0 0 1px rgba(34,197,94,.15);
+}
+.mill-stand.sensing .ms-lbl{color:var(--ok);}
+.mill-stand.pass .ms-house{animation:standPass .55s ease-out;}
+@keyframes eyeBlink{0%,100%{opacity:1;}50%{opacity:.45;}}
+@keyframes standPass{
+  0%{filter:brightness(1.6);}
+  100%{filter:brightness(1);}
+}
+.mill-stand .ms-count{
+  position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+  font-family:var(--fm);font-size:12px;font-weight:700;color:#e0f2fe;
+  background:rgba(30,37,46,.92);padding:2px 6px;border-radius:3px;border:1px solid #556274;
+}
+.mill-billets{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none;}
+.mill-billet{
+  position:absolute;top:96px;height:14px;width:42px;margin-left:-21px;
+  border-radius:3px;
+  background:linear-gradient(180deg,#ffb36a 0%,#ff6a1a 35%,#c2410c 70%,#7c2d12 100%);
+  box-shadow:0 0 14px rgba(249,115,22,.75),0 0 28px rgba(239,68,68,.35),inset 0 1px 0 rgba(255,255,255,.35);
+  transform:translateX(0);transition:left .55s cubic-bezier(.22,.8,.28,1),opacity .35s;
+  z-index:3;
+}
+.mill-billet::after{
+  content:'';position:absolute;inset:2px 4px auto;height:3px;border-radius:2px;
+  background:rgba(255,255,255,.35);
+}
+.mill-billet.hot{animation:billetPulse .7s ease-in-out infinite;}
+.mill-billet.enter{animation:billetEnter .45s ease-out;}
+.mill-billet.exit{opacity:0;transform:translateX(24px) scaleX(.7);}
+@keyframes billetPulse{
+  0%,100%{box-shadow:0 0 12px rgba(249,115,22,.7),0 0 22px rgba(239,68,68,.3);}
+  50%{box-shadow:0 0 20px rgba(251,146,60,.95),0 0 36px rgba(239,68,68,.45);}
+}
+@keyframes billetEnter{
+  from{opacity:0;transform:translateX(-28px) scaleX(.6);}
+  to{opacity:1;transform:translateX(0) scaleX(1);}
+}
+.mill-dir{
+  position:absolute;left:10px;bottom:8px;font-family:var(--fm);font-size:10px;color:#a8b4c2;
+  letter-spacing:.08em;text-transform:uppercase;z-index:2;
+}
+.mill-dir span{color:#7dd3fc;font-weight:700;}
+
+/* CCM caster · 2-strand HMD material animation */
+.ccm-pass{margin:0 0 12px;}
+.ccm-algo{
+  display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;margin:0 0 12px;
+}
+.ccm-algo .step{
+  border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;background:var(--panel);
+}
+.ccm-algo .step .n{
+  font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--live);
+}
+.ccm-algo .step .t{font-size:13px;font-weight:700;margin:4px 0 2px;color:var(--ink);}
+.ccm-algo .step .d{font-size:11px;color:var(--muted);font-family:var(--fm);line-height:1.35;}
+.ccm-progress{
+  height:10px;border-radius:999px;background:var(--line2);overflow:hidden;margin-top:8px;
+}
+.ccm-progress > i{
+  display:block;height:100%;width:0%;border-radius:inherit;
+  background:linear-gradient(90deg,#0d9488,#14b8a6);
+  transition:width .4s ease;
+}
+.ccm-progress.gap > i{background:linear-gradient(90deg,#64748b,#94a3b8);}
+.ccm-track{
+  position:relative;height:150px;border:1px solid var(--line2);border-radius:6px;background:#1a2029;overflow:hidden;
+}
+.ccm-floor{
+  position:absolute;left:0;right:0;top:68px;height:48px;
+  background:linear-gradient(180deg,#2a3340,#222933 40%,#1a2029);
+  border-top:1px solid #4a5564;border-bottom:1px solid #4a5564;
+}
+.ccm-strands{
+  position:absolute;inset:0;display:grid;grid-template-columns:1fr 1.2fr 1.2fr 1fr;gap:0;padding:8px 8px 0;z-index:1;
+}
+.ccm-node{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0;}
+.ccm-node .cn-lbl{
+  font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:#c8d2de;text-align:center;
+}
+.ccm-node .cn-box{
+  margin-top:8px;width:72%;max-width:70px;height:52px;position:relative;
+  background:linear-gradient(180deg,#3d4856,#2a323e);border:2px solid #5a6574;border-radius:4px;
+  transition:border-color .15s,background .15s,box-shadow .15s;
+}
+.ccm-node .cn-eye{
+  position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#3d4a57;box-shadow:0 0 0 1px #111;
+}
+.ccm-node.sensing .cn-lbl,
+.ccm-node:has(.cn-box.sensing) .cn-lbl{color:#4ade80!important;}
+.ccm-node.sensing .cn-eye,
+.ccm-node .cn-box.sensing .cn-eye{
+  background:#22c55e!important;box-shadow:0 0 12px rgba(34,197,94,.95)!important;animation:eyeBlink .5s ease-in-out infinite;
+}
+/* Green when HMD tag TRUE / HIGH — class on node or on cn-box */
+.ccm-node.sensing .cn-box,
+.ccm-node .cn-box.sensing{
+  border-color:#22c55e!important;
+  background:linear-gradient(180deg,#166534,#14532d 55%,#052e16)!important;
+  box-shadow:0 0 18px rgba(34,197,94,.55),inset 0 0 0 1px rgba(74,222,128,.35)!important;
+}
+.ccm-node.sensing .cn-count,
+.ccm-node:has(.cn-box.sensing) .cn-count{
+  color:#052e16!important;background:#86efac!important;border-color:#22c55e!important;
+}
+.ccm-node .cn-count{
+  margin-top:6px;font-family:var(--fm);font-size:14px;font-weight:700;color:#e0f2fe;
+  background:rgba(30,37,46,.92);padding:2px 8px;border-radius:3px;border:1px solid #556274;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.ccm-billets{position:absolute;inset:0;pointer-events:none;z-index:3;}
+.ccm-billet{
+  position:absolute;top:84px;height:14px;width:40px;margin-left:-20px;border-radius:3px;
+  background:linear-gradient(180deg,#ffb36a 0%,#ff6a1a 35%,#c2410c 70%,#7c2d12 100%);
+  box-shadow:0 0 14px rgba(249,115,22,.75);transition:left .55s cubic-bezier(.22,.8,.28,1),opacity .35s;
+}
+.ccm-billet.hot{animation:billetPulse .7s ease-in-out infinite;}
+.ccm-billet.exit{opacity:0;transform:translateX(20px);}
+.ccm-timing{margin-top:10px;}
+@media(max-width:1100px){
+  .prod-grid,.prod-kpis{grid-template-columns:1fr 1fr;}
+  .ccm-algo{grid-template-columns:1fr;}
+}
+@media(max-width:860px){.prod-grid,.prod-kpis{grid-template-columns:1fr;}}
+
+#printHeader{display:none;}
+#prPrintSheet{display:none;}
+@media print{
+  @page{size:A4 portrait;margin:8mm;}
+  html,body{background:#fff!important;height:auto!important;}
+  .sidebar,.topbar,.alarm-banner,.hdr-flow,.flow-top,.ctrl-row,.no-print,.nav-scrim,
+  .sb-nav,.shell>aside{display:none!important;}
+  .main{margin-left:0!important;width:100%!important;}
+  .page{padding:0!important;}
+  .shell{display:block!important;}
+  body{background:#fff;}
+  #printHeader{display:block;margin-bottom:8px;border-bottom:2px solid #1f2430;padding-bottom:6px;}
+  body.print-prod #prPrintSheet{display:block!important;}
+  body.print-prod #prodReportPrintHeader,
+  body.print-prod #printHeader,
+  body.print-prod #view-prodreport .ctrl-row,
+  body.print-prod #prEmpty,
+  body.print-prod #prContent{display:none!important;}
+  body.print-prod .view{display:none!important;}
+  body.print-prod #view-prodreport{display:block!important;padding:0!important;}
+  body.print-prod #flowTop{display:none!important;}
+  body.print-prod .main,body.print-prod .page{overflow:visible!important;}
+  #prPrintSheet{font-size:9.5px;color:#111;line-height:1.2;page-break-inside:avoid;break-inside:avoid;}
+  #prPrintSheet .ps-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #1f2430;padding-bottom:6px;margin-bottom:8px;}
+  #prPrintSheet .ps-head h1{font-size:14px;margin:0;letter-spacing:.04em;}
+  #prPrintSheet .ps-head p{margin:2px 0 0;font-family:var(--fm);font-size:9px;color:#444;}
+  #prPrintSheet .ps-sec{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#1f2430;color:#fff;padding:3px 6px;margin:7px 0 4px;}
+  #prPrintSheet .ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:4px;}
+  #prPrintSheet .ps-grid.g8{grid-template-columns:repeat(4,1fr);}
+  #prPrintSheet .ps-kpi{border:1px solid #c5cbd6;padding:4px 6px;border-radius:3px;}
+  #prPrintSheet .ps-kpi .l{font-size:7.5px;text-transform:uppercase;letter-spacing:.06em;color:#555;font-weight:700;}
+  #prPrintSheet .ps-kpi .v{font-family:var(--fm);font-size:12px;font-weight:700;margin-top:1px;}
+  #prPrintSheet .ps-kpi .s{font-size:7.5px;color:#666;font-family:var(--fm);}
+  #prPrintSheet table{width:100%;border-collapse:collapse;font-size:8px;margin-top:2px;}
+  #prPrintSheet th,#prPrintSheet td{border:1px solid #b8bec8;padding:2px 4px;text-align:left;}
+  #prPrintSheet th{background:#e8eaee;font-size:7.5px;text-transform:uppercase;letter-spacing:.04em;}
+  #prPrintSheet .ps-foot{margin-top:6px;font-size:7.5px;color:#555;border-top:1px solid #ccc;padding-top:4px;}
+}
+
+@media(max-width:1100px){
+  .kpi-grid,.quality-grid,.report-sum{grid-template-columns:1fr 1fr;}
+  .hero-grid,.phase-grid{grid-template-columns:1fr;}
+}
+@media(max-width:960px){
+  .tb-menu{display:inline-flex;}
+  .sidebar{transform:translateX(-105%);box-shadow:var(--shadow-lg);}
+  body.nav-open .sidebar{transform:translateX(0);}
+  .main{margin-left:0;}
+  .kpi-grid,.quality-grid,.report-sum{grid-template-columns:1fr;}
+  .tb-sub{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="nav-scrim" id="navScrim" aria-hidden="true"></div>
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-row">
+        <div class="sb-mark" aria-hidden="true">SSP</div>
+        <div>
+          <div class="sb-kicker">STEEL EMS</div>
+          <div class="sb-name">Sugna Sponge and Power Pvt Ltd</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-asset">
+      <div class="sb-asset-lbl">Active feeder</div>
+      <div class="sb-asset-name">PAC3200 Feeder</div>
+      <div class="sb-asset-meta" id="sourceMeta">DB4 PAC3200 · DB8 BILLETS</div>
+    </div>
+    <nav class="sb-nav" aria-label="Plant areas">
+      <div class="nav-lvl">Main screens</div>
+      <a class="nav-item" href="/pro/" style="text-decoration:none;display:block;">Steel EMS Pro <span class="nav-badge" style="opacity:.9;">NEW</span></a>
+      <div class="nav-item" data-view="mes" role="button" tabindex="0">Smart EMS</div>
+      <div class="nav-item" data-view="ccm" role="button" tabindex="0">CCM Production</div>
+      <div class="nav-item" data-view="rmmis" role="button" tabindex="0">HMD · Production</div>
+      <div class="nav-item" data-view="prodreport" role="button" tabindex="0">Production Report</div>
+
+      <div class="nav-group open" id="navRmGroup">
+        <button type="button" class="nav-group-hd" id="navRmToggle" aria-expanded="true" aria-controls="navRmBody">
+          <span>Rolling Mill EMS</span>
+          <span class="chev" aria-hidden="true">▶</span>
+        </button>
+        <div class="nav-group-body" id="navRmBody">
+          <div class="nav-item active" data-view="overview" role="button" tabindex="0">Plant Overview</div>
+          <div class="nav-item" data-view="electrical" role="button" tabindex="0">Electrical Quality</div>
+          <div class="nav-item" data-view="trends" role="button" tabindex="0">Trends</div>
+          <div class="nav-item" data-view="reports" role="button" tabindex="0">Energy Reports</div>
+        </div>
+      </div>
+
+      <div class="nav-lvl">System</div>
+      <div class="nav-item" data-view="alarms" role="button" tabindex="0">Alarms <span class="nav-badge hide" id="navAlarmBadge">0</span></div>
+      <div class="nav-item" data-view="raw" role="button" tabindex="0">Raw Tags</div>
+    </nav>
+    <div class="sb-foot"><span>STEEL EMS</span><span>:5000</span></div>
+  </aside>
+
+  <div class="main">
+    <div class="hdr-flow" id="hdrFlow">
+      <div class="hdr-flow-track"></div>
+      <div class="hdr-flow-inner">
+        <span class="hdr-flow-label" id="hdrFlowLabel">NO SUPPLY</span>
+        <div class="hdr-flow-line" aria-hidden="true"></div>
+        <div class="hdr-flow-metrics">
+          <span class="hdr-flow-freq" id="hdrFlowFreq">—<span>Hz</span></span>
+          <span class="hdr-flow-power" id="hdrFlowPower">— kW</span>
+          <span class="hdr-flow-power" id="hdrFlowKva" style="opacity:.9;">— kVA</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="alarm-banner" id="alarmBanner">
+      <span class="alarm-count" id="alarmCount">NO ALARMS</span>
+      <span class="alarm-msg" id="alarmMsg">System normal — monitoring PAC3200 feeder.</span>
+      <button class="alarm-ack no-print" id="ackBtn" type="button">Acknowledge</button>
+    </div>
+
+    <header class="topbar">
+      <div class="tb-left">
+        <button class="tb-menu no-print" id="navToggle" type="button" aria-label="Open navigation" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
+        </button>
+        <div class="tb-titles">
+          <div class="tb-title" id="pageTitle">Plant Overview</div>
+        </div>
+      </div>
+      <div class="tb-right">
+        <div class="auth-row no-print">
+          <input id="mesUser" placeholder="user" title="MES login">
+          <input id="mesPass" type="password" placeholder="pass" title="Password">
+          <button class="btn" type="button" id="mesLoginBtn">Login</button>
+          <button class="btn" type="button" id="mesLogoutBtn">Out</button>
+          <span class="tb-meta" id="mesAuthStatus">Guest</span>
+        </div>
+        <button class="btn no-print" type="button" id="themeToggleBtn">Light</button>
+        <span class="status-pill off" id="livePill"><span class="status-dot"></span><span id="liveText">OFFLINE</span></span>
+        <span class="tb-meta" id="lastUpdate">Last: —</span>
+        <span class="tb-clock" id="tbClock">--:--:--</span>
+      </div>
+    </header>
+
+    <section class="flow-top" id="flowTop">
+      <div class="card">
+        <div class="card-hd">
+          <h3>Power flow · single-line</h3>
+          <span class="tag off" id="flowTag">NO SUPPLY</span>
+        </div>
+        <div class="card-bd">
+          <svg class="sld" viewBox="0 0 640 160" preserveAspectRatio="xMidYMid meet" aria-label="Power flow diagram">
+            <!-- Values focused above nodes -->
+            <text class="sld-val" x="110" y="18" text-anchor="middle" id="sldValA1">— V</text>
+            <text class="sld-val-sm" x="110" y="34" text-anchor="middle" id="sldValA2">— A</text>
+            <text class="sld-val" x="520" y="18" text-anchor="middle" id="sldValB1">— kW</text>
+            <text class="sld-val-sm" x="520" y="34" text-anchor="middle" id="sldValB2">— kVA</text>
+
+            <line class="sld-line" id="sldLine" x1="150" y1="78" x2="470" y2="78"/>
+            <!-- HT Panel — lightning symbol -->
+            <circle class="sld-node" id="sldNodeA" cx="110" cy="78" r="36"/>
+            <path class="sld-icon" id="sldIconA" d="M110,56 L102,74 L111,74 L104,100 M110,56 L118,74 L109,74 L116,100"/>
+            <text class="sld-lbl" x="110" y="132" text-anchor="middle" id="sldLabelA">HT Panel</text>
+            <text class="sld-sub" x="110" y="146" text-anchor="middle">Avg V L-L · Avg I</text>
+
+            <!-- Transformer — dual-winding circles -->
+            <circle class="sld-node" id="sldNodeB" cx="520" cy="78" r="36"/>
+            <circle class="sld-icon" id="sldIconB1" cx="520" cy="67" r="11"/>
+            <circle class="sld-icon" id="sldIconB2" cx="520" cy="89" r="11"/>
+            <text class="sld-lbl" x="520" y="132" text-anchor="middle">Transformer</text>
+            <text class="sld-sub" x="520" y="146" text-anchor="middle">Active · Apparent</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <div class="page">
+      <div class="ctrl-row no-print">
+        <div class="field">
+          <label>Poll interval</label>
+          <select id="refreshInterval" title="Screen refresh only — disk auto-save is always 1 s on the bridge">
+            <option value="1000" selected>1 s</option>
+            <option value="2000">2 s</option>
+            <option value="5000">5 s</option>
+            <option value="10000">10 s</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Data source</label>
+          <select id="dataMode">
+            <option value="auto">Auto (live + demo fallback)</option>
+            <option value="live">Live bridge only</option>
+            <option value="demo">Demo simulation</option>
+          </select>
+        </div>
+        <button class="btn" id="updateNowBtn" type="button">Update now</button>
+        <span class="tb-meta spacer" id="bridgeUrl">http://localhost:5000/api/live</span>
+      </div>
+
+      <!-- SMART MES PLANT COMMAND -->
+      <div class="view" id="view-mes">
+        <div id="sharedLiveStripMes" class="no-print"></div>
+        <div id="mesOverviewRoot"><div class="empty">Loading MES…</div></div>
+      </div>
+
+      <!-- OVERVIEW — Plant process overview (OEM) -->
+      <div class="view active" id="view-overview">
+        <div class="oem-header" id="ovOemHeader">
+          <div class="oem-header-params" id="ovHeaderParams"></div>
+        </div>
+
+        <div class="oem-band">01 · Production areas</div>
+        <div class="plant-hero" id="plantHero">
+          <div class="plant-area ccm">
+            <div class="plant-area-kicker">Area A</div>
+            <div class="plant-area-title">CCM · Continuous casting</div>
+            <div class="plant-area-metrics" id="ovCcmMetrics"></div>
+          </div>
+          <div class="plant-area rm">
+            <div class="plant-area-kicker">Area B</div>
+            <div class="plant-area-title">RM · Rolling mill</div>
+            <div class="plant-area-metrics" id="ovRmMetrics"></div>
+          </div>
+          <div class="plant-area ems">
+            <div class="plant-area-kicker">Area C</div>
+            <div class="plant-area-title">EMS · PAC3200</div>
+            <div class="plant-area-metrics" id="ovEmsMetrics"></div>
+          </div>
+        </div>
+
+        <div class="oem-band">02 · Key operating parameters</div>
+        <div class="plant-strip" id="plantStrip"></div>
+        <div class="param-matrix" id="overviewKpis"></div>
+
+        <div class="oem-band">03 · Power trend &amp; energy totals</div>
+        <div class="hero-grid" style="margin-top:0;">
+          <div class="card">
+            <div class="card-hd"><h3>Peak / live power trend</h3></div>
+            <div class="card-bd"><div class="spark-wrap"><canvas id="sparkChart"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>Energy totals</h3></div>
+            <div class="card-bd"><div class="energy-pair" id="energyPair" style="margin:0;"></div></div>
+          </div>
+        </div>
+
+        <div class="oem-band">04 · Active conditions</div>
+        <div class="tbl-wrap" style="border-radius:0;border-top:none;margin:0;">
+          <table>
+            <thead><tr><th>Severity</th><th>Time</th><th>Tag / Condition</th><th>Value</th><th>Limit</th></tr></thead>
+            <tbody id="overviewAlarmBody"><tr><td colspan="5" class="empty">No active conditions</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ELECTRICAL -->
+      <div class="view" id="view-electrical">
+        <div class="oem-header" id="elOemHeader">
+          <div class="oem-header-params" id="elHeaderParams"></div>
+        </div>
+
+        <div class="oem-band">01 · Feeder totals (3-phase)</div>
+        <div class="param-matrix" id="qualityKpis"></div>
+
+        <div class="oem-band">02 · Parameter selection</div>
+        <div class="phase-tag-picker is-collapsed" id="phaseTagPicker">
+          <div class="ptp-hd">
+            <div>
+              <h3 style="margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.08em;">Tag list</h3>
+              <div class="phase-tag-hint" id="phaseTagHint">Selected tags drive Phase L1 / L2 / L3 values</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <button class="btn btn-pri" type="button" id="phaseTagToggleBtn">Edit tags</button>
+              <button class="btn" type="button" id="phaseTagAllBtn">Select all</button>
+              <button class="btn" type="button" id="phaseTagDefaultBtn">Default</button>
+              <button class="btn" type="button" id="phaseTagNoneBtn">Clear</button>
+              <button class="btn btn-dark" type="button" id="phaseTagDoneBtn">Done</button>
+            </div>
+          </div>
+          <div class="ptp-body" id="phaseTagBody">
+            <div class="tbl-wrap" style="border-radius:0;max-height:260px;">
+              <table class="phase-tag-table" id="phaseTagTable">
+                <thead>
+                  <tr>
+                    <th style="width:36px;">Use</th>
+                    <th>Metric</th>
+                    <th>Phase L1 tag</th>
+                    <th>Phase L2 tag</th>
+                    <th>Phase L3 tag</th>
+                  </tr>
+                </thead>
+                <tbody id="phaseTagList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="oem-band">03 · Per-phase faceplates</div>
+        <div class="phase-grid" id="phaseGrid"></div>
+      </div>
+
+      <!-- TRENDS -->
+      <div class="view" id="view-trends">
+        <div class="card">
+          <div class="card-hd">
+            <h3>Live power trend</h3>
+            <span class="muted" id="trendHint">Last ~40 samples</span>
+          </div>
+          <div class="card-bd"><div class="chart-box"><canvas id="trendChart"></canvas></div></div>
+        </div>
+        <div class="sec"><h2>Energy accumulation</h2></div>
+        <div class="card">
+          <div class="card-bd"><div class="chart-box"><canvas id="energyChart"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- ALARMS -->
+      <div class="view" id="view-alarms">
+        <div class="card">
+          <div class="card-hd">
+            <h3>Alarm &amp; caution list</h3>
+            <button class="btn" id="clearAckBtn" type="button">Clear acknowledged</button>
+          </div>
+          <div class="card-bd" style="padding:0;">
+            <div class="tbl-wrap" style="border:none;border-radius:0;">
+              <table>
+                <thead><tr><th>Sev</th><th>State</th><th>Time</th><th>Message</th><th>Value</th><th>Limit</th></tr></thead>
+                <tbody id="alarmTableBody"><tr><td colspan="6" class="empty">No alarms</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="sec"><h2>Configured limits</h2></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Parameter</th><th>Caution</th><th>Alarm</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>Avg voltage L-N</td><td>&lt; 210 or &gt; 250 V</td><td>&lt; 190 or &gt; 265 V</td><td>Typical LV feeder bands — adjust for site</td></tr>
+              <tr><td>Power factor</td><td>&lt; 0.90</td><td>&lt; 0.80</td><td>Lagging import assumed</td></tr>
+              <tr><td>THD current (any phase)</td><td>&gt; 8%</td><td>&gt; 12%</td><td>IEEE 519 oriented</td></tr>
+              <tr><td>Frequency</td><td>&lt; 49.5 or &gt; 50.5 Hz</td><td>&lt; 49.0 or &gt; 51.0 Hz</td><td>50 Hz region</td></tr>
+              <tr><td>Comm / bridge</td><td>—</td><td>Offline (live mode)</td><td>No PLC data path</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CCM PRODUCTION -->
+      <div class="view" id="view-ccm">
+        <div id="sharedLiveStripCcm" class="no-print"></div>
+
+        <div class="ccm-algo no-print" id="ccmAlgoSteps">
+          <div class="step">
+            <div class="n">Step 1 · Start</div>
+            <div class="t">Any stand HMD ON</div>
+            <div class="d">STAND1_HMD or STAND2_HMD rising edge (or count +1) starts the heat automatically.</div>
+          </div>
+          <div class="step">
+            <div class="n">Step 2 · Cast ~75 min</div>
+            <div class="t">Sequence running</div>
+            <div class="d">Heat stays open for ~75 minutes. Billets counted on both strands. Auto End &amp; save at 75 min.</div>
+          </div>
+          <div class="step">
+            <div class="n">Step 3 · Gap to 2.3 h</div>
+            <div class="t">Next heat window</div>
+            <div class="d">Next auto-start only after 2.3 hours from this heat’s start (plant ladle cycle).</div>
+          </div>
+        </div>
+
+        <div class="mill-pass ccm-pass" id="ccmPass">
+          <div class="mill-pass-hd">
+            <h3>CCM · HMD sense material (Strand 1 &amp; 2)</h3>
+            <div class="mill-pass-meta" id="ccmPassMeta">Waiting for HMD…</div>
+          </div>
+          <div class="ccm-track" id="ccmTrack">
+            <div class="ccm-floor"></div>
+            <div class="ccm-strands" id="ccmStrands">
+              <div class="ccm-node" data-ccm-node="mold"><div class="cn-lbl">Tundish / Mold</div><div class="cn-box"><i class="cn-eye"></i></div></div>
+              <div class="ccm-node" id="ccmNodeS1" data-ccm-node="s1"><div class="cn-lbl">Strand 1 HMD</div><div class="cn-box"><i class="cn-eye"></i></div><div class="cn-count" id="ccmAnimS1">0</div></div>
+              <div class="ccm-node" id="ccmNodeS2" data-ccm-node="s2"><div class="cn-lbl">Strand 2 HMD</div><div class="cn-box"><i class="cn-eye"></i></div><div class="cn-count" id="ccmAnimS2">0</div></div>
+              <div class="ccm-node" data-ccm-node="cut"><div class="cn-lbl">Cut / Discharge</div><div class="cn-box"><i class="cn-eye"></i></div></div>
+            </div>
+            <div class="ccm-billets" id="ccmBillets"></div>
+            <div class="mill-dir">Flow <span>Mold → Strand HMD → Cut billet</span></div>
+          </div>
+          <div class="ccm-timing" id="ccmTimingPanel">
+            <div class="report-sum" style="grid-template-columns:repeat(4,1fr);" id="ccmTimingCards"></div>
+            <div class="ccm-progress" id="ccmCastBar" title="Cast progress 0–75 min"><i id="ccmCastBarFill"></i></div>
+            <p class="prod-formula" id="ccmAlgoStatus" style="margin-top:8px;">Auto heat: waiting for Stand 1 or Stand 2 HMD…</p>
+          </div>
+        </div>
+
+        <div class="prod-grid">
+          <div class="card">
+            <div class="card-hd">
+              <h3>CCM heat · billet transfer</h3>
+              <span class="prod-status stop" id="ccmHeatPill">NO HEAT</span>
+            </div>
+            <div class="card-bd">
+              <div class="ctrl-row" style="margin:0;padding:0;border:none;background:transparent;">
+                <div class="field"><label>Heat number</label><input type="text" id="ccmHeatNo" placeholder="H-2026-0142" style="min-width:140px;"></div>
+                <div class="field"><label>Billet W</label><input type="number" id="ccmBilletW" value="110" min="50" step="1" style="min-width:70px;"></div>
+                <div class="field"><label>Billet H</label><input type="number" id="ccmBilletH" value="110" min="50" step="1" style="min-width:70px;"></div>
+                <div class="field"><label>Billet length</label>
+                  <select id="ccmBilletL" style="min-width:110px;" title="Cut length 5600–9000 mm"></select>
+                </div>
+                <div class="field"><label>Density t/m³</label><input type="number" id="ccmDensity" value="7.85" step="0.01" style="min-width:70px;"></div>
+              </div>
+              <div class="sec"><h2>HMD counts · Strand 1 &amp; 2 (DB8)</h2></div>
+              <div class="ctrl-row" style="margin:0;padding:0;border:none;background:transparent;">
+                <div class="field"><label>Strand 1 · STAND1_COUNTS</label><input type="number" id="ccmS1" value="0" min="0" style="min-width:90px;"></div>
+                <button class="btn" type="button" data-ccm-inc="ccmS1">+1</button>
+                <div class="field"><label>Strand 2 · STAND2_COUNTS</label><input type="number" id="ccmS2" value="0" min="0" style="min-width:90px;"></div>
+                <button class="btn" type="button" data-ccm-inc="ccmS2">+1</button>
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-left:8px;"><input type="checkbox" id="ccmManualHmd"> Manual override</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-left:8px;" title="Start on HMD · End at 75 min · Next after 2.3 h"><input type="checkbox" id="ccmAutoHeat" checked> Auto heat (HMD)</label>
+              </div>
+              <div class="ctrl-row" style="margin:8px 0 0;padding:0;border:none;background:transparent;">
+                <div class="field"><label>Cast time (min)</label><input type="number" id="ccmCastMin" value="75" min="10" max="180" step="1" style="min-width:70px;" title="Typical sequence ~75 min"></div>
+                <div class="field"><label>Cycle time (h)</label><input type="number" id="ccmCycleHr" value="2.3" min="0.5" max="12" step="0.1" style="min-width:70px;" title="Next heat after 2.3 h from start"></div>
+              </div>
+              <p class="prod-formula" id="ccmFormula">Total billets = S1+S2 · Unit = — t · Heat tons = — t</p>
+              <div class="ctrl-row no-print" style="margin:12px 0 0;padding:0;border:none;background:transparent;">
+                <button class="btn btn-pri" id="ccmStartBtn" type="button">Start CCM heat</button>
+                <button class="btn btn-dark" id="ccmEndBtn" type="button" disabled>End &amp; save heat</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>Day / month production</h3></div>
+            <div class="card-bd">
+              <div class="ctrl-row" style="margin:0;padding:0;border:none;background:transparent;">
+                <div class="field"><label>Date (24 h)</label><input type="date" id="ccmDayDate"></div>
+                <button class="btn btn-pri" id="ccmDayBtn" type="button">Calc day</button>
+                <div class="field"><label>Month</label><input type="month" id="ccmMonth"></div>
+                <button class="btn" id="ccmMonthBtn" type="button">Month report</button>
+                <button class="btn" id="ccmExportBtn" type="button">Export CSV</button>
+                <button class="btn" id="ccmReloadBtn" type="button">Reload from disk</button>
+              </div>
+              <div class="report-sum" style="margin-top:12px;" id="ccmDayCards"></div>
+              <p class="prod-formula">Saved to disk as <b>ccm_heats.jsonl</b> in your log folder (default D:\PAC3200_Data).</p>
+            </div>
+          </div>
+        </div>
+        <div class="prod-kpis" id="ccmLiveKpis"></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Heat</th><th>Started</th><th>Ended</th><th>Cast</th><th>S1</th><th>S2</th><th>Total pcs</th><th>Tons</th><th>How</th></tr></thead>
+            <tbody id="ccmHeatBody"><tr><td colspan="9" class="empty">No CCM heats saved</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ROLLING MILL MIS · HMD LINE -->
+      <div class="view" id="view-rmmis">
+        <div id="sharedLiveStripRm" class="no-print"></div>
+        <div class="prod-grid">
+          <div class="card">
+            <div class="card-hd">
+              <h3>RM heat · billets from CCM</h3>
+              <span class="prod-status stop" id="rmHeatPill">NO HEAT</span>
+            </div>
+            <div class="card-bd">
+              <div class="ctrl-row" style="margin:0;padding:0;border:none;background:transparent;flex-wrap:wrap;">
+                <div class="field"><label>Heat number</label><input type="text" id="rmHeatNo" placeholder="H-2026-0142" style="min-width:140px;"></div>
+                <div class="field"><label>Billet W</label><input type="number" id="rmBilletW" value="110" min="50" step="1" style="min-width:70px;"></div>
+                <div class="field"><label>Billet H</label><input type="number" id="rmBilletH" value="110" min="50" step="1" style="min-width:70px;"></div>
+                <div class="field"><label>Billet length</label>
+                  <select id="rmBilletL" style="min-width:110px;" title="Cut length 5600–9000 mm — changes unit weight &amp; tons"></select>
+                </div>
+                <div class="field"><label>Custom L (mm)</label><input type="number" id="rmBilletLCustom" value="6000" min="5600" max="9000" step="50" style="min-width:90px;" title="Type any length 5600–9000 if not in list"></div>
+                <div class="field"><label>Density</label><input type="number" id="rmDensity" value="7.85" step="0.01" style="min-width:70px;"></div>
+              </div>
+              <p class="prod-formula" id="rmBilletFormula" style="margin-top:8px;">Unit weight = — t/billet · Good tons = TMT × unit</p>
+              <div class="ctrl-row no-print" style="margin:10px 0 0;padding:0;border:none;background:transparent;">
+                <button class="btn btn-pri" id="rmStartBtn" type="button">Start RM heat</button>
+                <button class="btn btn-dark" id="rmEndBtn" type="button" disabled>End &amp; save</button>
+                <button class="btn" id="rmPrintBtn" type="button">Print</button>
+                <button class="btn" id="rmSyncCcmSizeBtn" type="button" title="Copy W×H×L from CCM page">Sync from CCM</button>
+              </div>
+              <p class="prod-formula">Auto-start when HT kW rises above <b>Mill start</b> threshold (default 500 kW). Manual Start still available. Algorithm: unit t = (W/1000)×(H/1000)×(L/1000)×density · Good tons = TMT_COUNTS × unit t · Miss t = (R3−TMT) × unit t.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hd">
+              <h3>HT load bands · auto mill state</h3>
+              <span class="prod-status stop" id="rmMillPill">STOPPED</span>
+            </div>
+            <div class="card-bd">
+              <p class="muted" style="margin-bottom:8px;">Mill state + RM heat auto-start from HT kW. When kW crosses above Mill start, heat opens automatically. Unit/ton = kWh ÷ TMT tons while mill is running.</p>
+              <div class="ctrl-row" style="margin:0;padding:0;border:none;background:transparent;flex-wrap:wrap;">
+                <div class="field"><label>Mill start kW &gt;</label><input type="number" id="rmStartKw" value="500" min="0" step="1" style="min-width:90px;" title="Above this = mill started + auto Start RM heat"></div>
+                <div class="field"><label>On-load kW &gt;</label><input type="number" id="rmOnLoadKw" value="1600" min="0" step="1" style="min-width:90px;" title="Above this = on-load (for util &amp; on-load time)"></div>
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-left:8px;"><input type="checkbox" id="rmManualHmd"> Manual HMD</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-left:8px;"><input type="checkbox" id="rmAutoDemo"> Auto demo HMD</label>
+              </div>
+              <p class="prod-formula" id="rmBandHint" style="margin-top:8px;">kW ≤ start → STOPPED · start &lt; kW ≤ on-load → IDLE RUN · kW &gt; on-load → ON LOAD</p>
+              <div class="report-sum" style="margin-top:12px;grid-template-columns:1fr 1fr 1fr;" id="rmStateCards"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec"><h2>Material flow · HMD line (DB8 Entry → R3 → … → TMT)</h2></div>
+        <div class="mill-pass" id="millPass">
+          <div class="mill-pass-hd">
+            <h3>Pass line · billet tracking</h3>
+            <div class="mill-pass-meta" id="millPassMeta">Waiting for HMD…</div>
+          </div>
+          <div class="mill-track" id="millTrack">
+            <div class="mill-floor"></div>
+            <div class="mill-rollers" id="millRollers" aria-hidden="true"></div>
+            <div class="mill-stands" id="millStands"></div>
+            <div class="mill-billets" id="millBillets"></div>
+            <div class="mill-dir">Flow <span>CCM → Entry → R3 → CCS → Shear → Block → TMT</span></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <div class="card-bd">
+            <div class="hmd-line" id="hmdLine"></div>
+            <p class="prod-formula" id="hmdLossFormula">Miss-roll / loss: —</p>
+          </div>
+        </div>
+
+        <div class="prod-kpis" id="rmMisKpis"></div>
+        <div class="sec"><h2>SEC · utilization · idle loss</h2></div>
+        <div class="report-sum" id="rmMisLossCards"></div>
+
+        <div class="sec"><h2>Day / month RM production</h2></div>
+        <div class="ctrl-row no-print">
+          <div class="field"><label>Date</label><input type="date" id="rmDayDate"></div>
+          <button class="btn btn-pri" id="rmDayBtn" type="button">Calc day</button>
+          <div class="field"><label>Month</label><input type="month" id="rmMonth"></div>
+          <button class="btn" id="rmMonthBtn" type="button">Month report</button>
+          <button class="btn" id="rmExportBtn" type="button">Export CSV</button>
+          <button class="btn" id="rmReloadBtn" type="button">Reload from disk</button>
+        </div>
+        <div class="report-sum" id="rmDayCards"></div>
+        <div class="tbl-wrap" style="margin-top:12px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Heat</th><th>Ended</th><th>L mm</th><th>Unit t</th><th>R3</th><th>TMT</th><th>Miss</th><th>Good t</th>
+                <th>On-load</th><th>Idle</th><th>Util%</th><th>kWh/t</th><th>Idle kWh</th>
+              </tr>
+            </thead>
+            <tbody id="rmHeatBody"><tr><td colspan="13" class="empty">No RM heats saved</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PRODUCTION COMBINED REPORT -->
+      <div class="view" id="view-prodreport">
+        <div id="prodReportPrintHeader" style="display:none;">
+          <h1 style="font-size:18px;">Plant Production Report — CCM &amp; Rolling Mill</h1>
+          <p class="muted" id="prodReportPrintMeta">—</p>
+        </div>
+        <div class="ctrl-row no-print">
+          <div class="field"><label>From date</label><input type="date" id="prFrom"></div>
+          <div class="field"><label>To date</label><input type="date" id="prTo"></div>
+          <button class="btn" id="prTodayBtn" type="button">Today</button>
+          <button class="btn" id="prMonthBtn" type="button">This month</button>
+          <button class="btn btn-pri" id="prGenBtn" type="button">Generate report</button>
+          <button class="btn btn-dark" id="prPrintBtn" type="button">Print report</button>
+          <button class="btn" id="prCsvBtn" type="button">Export CSV</button>
+          <button class="btn" id="prResetCcmBtn" type="button" title="Clear saved CCM heats">Reset CCM</button>
+          <button class="btn" id="prResetRmBtn" type="button" title="Clear saved RM heats">Reset RM</button>
+          <button class="btn" id="prResetAllBtn" type="button" title="Clear CCM + RM saved heats" style="border-color:rgba(185,28,28,.45);color:var(--alarm);">Reset all production</button>
+        </div>
+        <p class="prod-formula no-print" style="margin-top:8px;">
+          <b>Reset production:</b> clears <b>saved</b> CCM / RM heat history (report + disk). Live HMD counts are separate — they reset when you End a heat or Start a new heat.
+        </p>
+        <div id="prEmpty" class="empty">Select a date range and click Generate report.</div>
+        <div id="prPrintSheet" aria-hidden="true"></div>
+        <div id="prContent" style="display:none;">
+          <div class="rpt-banner">
+            <div>
+              <h2>Production MIS Report</h2>
+              <p id="prodReportBannerSub">Period —</p>
+            </div>
+            <div style="text-align:right;font-family:var(--fm);font-size:11px;color:#94a3b8;" id="prodReportBannerRight"></div>
+          </div>
+
+          <div class="rpt-block">
+            <div class="rpt-block-hd"><h3>1 · CCM production</h3><span class="badge">Casting</span></div>
+            <div class="mega-grid" id="prCcmCards"></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Heat No</th><th>Ended</th><th>Strand 1</th><th>Strand 2</th><th>Billets</th><th>Production (t)</th></tr></thead>
+                <tbody id="prCcmBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="rpt-block">
+            <div class="rpt-block-hd"><h3>2 · Rolling mill — heats &amp; billets</h3><span class="badge">Saved heats</span></div>
+            <div class="mega-grid" id="prRmProdCards"></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Heat No</th><th>Started</th><th>Ended</th>
+                    <th>Billets (R3)</th><th>Passed (TMT)</th><th>Miss-roll</th>
+                    <th>Production (t)</th><th>How</th>
+                  </tr>
+                </thead>
+                <tbody id="prRmHeatBody"></tbody>
+              </table>
+            </div>
+            <p class="prod-formula">Heat-wise like CCM · totals from <b>saved RM heats</b> only. Live HMD Production billet reset does <b>not</b> clear these rows.</p>
+          </div>
+
+          <div class="rpt-block">
+            <div class="rpt-block-hd"><h3>3 · Miss-roll &amp; total production</h3><span class="badge">Yield</span></div>
+            <div class="mega-grid" id="prRmYieldCards"></div>
+          </div>
+
+          <div class="rpt-block">
+            <div class="rpt-block-hd"><h3>4 · Running / on-load / idle time &amp; SEC</h3><span class="badge">Performance</span></div>
+            <div class="mega-grid" id="prRmTimeCards"></div>
+          </div>
+
+          <div class="rpt-block">
+            <div class="rpt-block-hd"><h3>5 · Heat-wise timing &amp; SEC</h3><span class="badge">RM heats</span></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Heat No</th><th>Ended</th><th>Billets (R3)</th><th>Passed (TMT)</th><th>Miss-roll</th>
+                    <th>Production (t)</th><th>On-load</th><th>Idle</th><th>Running</th>
+                    <th>Util %</th><th>Unit/ton</th><th>Idle kWh</th>
+                  </tr>
+                </thead>
+                <tbody id="prRmBody"></tbody>
+              </table>
+            </div>
+            <p class="prod-formula">Same saved heats as section 2 · On-load / Idle / SEC. Not linked to live HMD line counters.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="view" id="view-reports">
+        <div id="printHeader">
+          <h1 style="font-size:18px;">PAC3200 Feeder — Energy Report</h1>
+          <p class="muted" id="printRange">Range: —</p>
+          <p class="muted" id="printLogPath"></p>
+        </div>
+
+        <div class="card no-print" style="margin-bottom:12px;">
+          <div class="card-hd"><h3>Plant data folder · save / retrieve / import / export</h3><span class="muted" id="logStatus">—</span></div>
+          <div class="card-bd">
+            <div class="ctrl-row" style="margin:0;border:none;padding:0;box-shadow:none;background:transparent;flex-wrap:wrap;">
+              <div class="field" style="flex:1;min-width:260px;">
+                <label>Selected folder (energy CSV + heats + MES DB)</label>
+                <input type="text" id="logDirInput" placeholder="D:\Smart EMS and MIS Project\Plant_Data" style="min-width:100%;width:100%;">
+              </div>
+              <button class="btn" id="useDriveDBtn" type="button" title="Project Plant_Data folder">Use project Plant_Data</button>
+              <button class="btn btn-pri" id="saveLogDirBtn" type="button">Save folder</button>
+              <button class="btn" id="refreshDataFilesBtn" type="button">Refresh list</button>
+              <button class="btn btn-dark" id="exportDataZipBtn" type="button">Export all (ZIP)</button>
+            </div>
+            <p class="muted" style="margin-top:8px;" id="logFileLabel">File: —</p>
+            <p class="prod-formula" style="margin-top:6px;">While bridge runs, <b>every 1 second</b> all DB4 Output + DB8 HMD tags are appended to <b>pac3200_log.csv</b> and <b>plant_live.jsonl</b>. CCM/RM heats still save when a heat ends. Export ZIP / Import heats from this screen.</p>
+            <div class="ctrl-row" style="margin:10px 0 0;border:none;padding:0;background:transparent;flex-wrap:wrap;">
+              <div class="field">
+                <label>Import heats kind</label>
+                <select id="importHeatKind">
+                  <option value="ccm_heats">CCM heats</option>
+                  <option value="rm_heats">RM heats</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Mode</label>
+                <select id="importHeatMode">
+                  <option value="append">Append (skip duplicates)</option>
+                  <option value="replace">Replace file</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>File (.jsonl / .json)</label>
+                <input type="file" id="importHeatFile" accept=".jsonl,.json,application/json,text/plain" style="min-width:220px;">
+              </div>
+              <button class="btn btn-pri" id="importHeatBtn" type="button">Import</button>
+              <button class="btn" id="reloadHeatsBtn" type="button">Reload heats into MIS</button>
+            </div>
+            <div class="tbl-wrap" style="margin-top:12px;">
+              <table>
+                <thead><tr><th>File in folder</th><th>Size</th><th>Modified</th><th></th></tr></thead>
+                <tbody id="dataFilesBody"><tr><td colspan="4" class="empty">Save / refresh folder to list files</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="ctrl-row no-print">
+          <div class="field"><label>Select date (full day)</label><input type="date" id="rptDate"></div>
+          <button class="btn" id="applyDateBtn" type="button">Use this date</button>
+          <div class="field"><label>From</label><input type="datetime-local" id="rptStart"></div>
+          <div class="field"><label>To</label><input type="datetime-local" id="rptEnd"></div>
+          <button class="btn" id="last24Btn" type="button">Last 24 h</button>
+          <button class="btn" id="readingDayBtn" type="button">Reading day 08:00</button>
+          <button class="btn btn-pri" id="genReportBtn" type="button">Calculate energy</button>
+          <button class="btn btn-dark" id="printBtn" type="button">Print</button>
+          <button class="btn" id="csvBtn" type="button">CSV</button>
+          <button class="btn" id="excelBtn" type="button">Excel</button>
+        </div>
+        <div id="reportEmpty" class="empty">Pick a date or From/To time, then click Calculate energy. Bridge must be running so live data is logged to disk.</div>
+        <div id="reportContent" style="display:none;">
+          <div class="report-sum" id="reportSummary"></div>
+          <div class="card" style="margin-bottom:12px;"><div class="card-bd"><div class="chart-box"><canvas id="reportChart"></canvas></div></div></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Timestamp</th><th>kWh</th><th>kVAh</th><th>kW</th><th>kVA</th><th>PF</th><th>A</th><th>V</th></tr></thead>
+              <tbody id="reportTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RAW -->
+      <div class="view" id="view-raw">
+        <div class="card">
+          <div class="card-hd">
+            <h3>DB4 Output · raw tags</h3>
+            <span class="muted" id="rawGroupHint">PAC3200 Output group + DB8</span>
+          </div>
+          <div class="card-bd" style="padding:0;">
+            <div class="tbl-wrap" style="border:none;border-radius:0;">
+              <table>
+                <thead><tr><th>Tag</th><th>Value</th></tr></thead>
+                <tbody id="rawTableBody"><tr><td colspan="2" class="empty">Waiting for data…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   PLC Live Monitor — High-Performance HMI
+   Bridge contract matches pac3200_live_portal: /api/live and /api/history
+═══════════════════════════════════════════════════════════════════════════ */
+const BRIDGE_URL = 'http://localhost:5000/api/live';
+const BRIDGE_ORIGIN = 'http://localhost:5000';
+/** PLC power tags are already in kW / kVA / kVAR — no scale factor. */
+const ACTIVE_POWER_DIV = 1;
+
+function kW(raw){ return n(raw) / ACTIVE_POWER_DIV; }
+
+const PAGE_META = {
+  mes:        ['Smart EMS', ''],
+  ccm:        ['CCM Production', 'Casting · Strand HMD · heat / day / month'],
+  overview:   ['Plant Overview', 'CCM · Rolling Mill · EMS — plant situational view'],
+  electrical: ['Electrical Quality', 'Rolling Mill EMS · feeder detail'],
+  trends:     ['Trends', 'Rolling Mill EMS · process direction'],
+  reports:    ['Energy Reports', 'Rolling Mill EMS · energy records'],
+  rmmis:      ['HMD · Production', 'Rolling Mill MIS · material flow & SEC'],
+  prodreport: ['Production Report', 'CCM + RM MIS · day/month print'],
+  alarms:     ['Alarms', 'System · operator response'],
+  raw:        ['Raw Tags', 'System · diagnostics'],
+};
+const EMS_VIEWS = new Set(['overview','electrical','trends','reports']);
+
+const LIMITS = {
+  voltCautionLo: 210, voltCautionHi: 250, voltAlarmLo: 190, voltAlarmHi: 265,
+  pfCaution: 0.90, pfAlarm: 0.80,
+  thdCaution: 8, thdAlarm: 12,
+  freqCautionLo: 49.5, freqCautionHi: 50.5, freqAlarmLo: 49.0, freqAlarmHi: 51.0,
+};
+
+let history = { labels: [], P: [], S: [], V: [], I: [], PF: [] };
+let energyHistory = { labels: [], KWH: [], KVAH: [] };
+let sparkChart = null, trendChart = null, energyChart = null, reportChart = null;
+let lastReportRows = null, lastReportRange = null;
+let activeAlarms = [];
+let ackedKeys = new Set(JSON.parse(localStorage.getItem('plc_acked') || '[]'));
+let pollTimer = null;
+let demoT = 0;
+
+function closeNav(){
+  document.body.classList.remove('nav-open');
+  const btn = document.getElementById('navToggle');
+  if(btn){ btn.setAttribute('aria-expanded','false'); btn.setAttribute('aria-label','Open navigation'); }
+}
+function openNav(){
+  document.body.classList.add('nav-open');
+  const btn = document.getElementById('navToggle');
+  if(btn){ btn.setAttribute('aria-expanded','true'); btn.setAttribute('aria-label','Close navigation'); }
+}
+document.getElementById('navToggle')?.addEventListener('click', ()=>{
+  if(document.body.classList.contains('nav-open')) closeNav(); else openNav();
+});
+document.getElementById('navScrim')?.addEventListener('click', closeNav);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeNav(); });
+
+const RM_NAV_VIEWS = new Set(['overview','electrical','trends','reports','rmmis','prodreport']);
+const RM_NAV_KEY = 'nav_rm_open';
+
+function setRmNavOpen(open){
+  const group = document.getElementById('navRmGroup');
+  const btn = document.getElementById('navRmToggle');
+  if(!group || !btn) return;
+  group.classList.toggle('open', !!open);
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  localStorage.setItem(RM_NAV_KEY, open ? '1' : '0');
+}
+function initRmNavGroup(){
+  const btn = document.getElementById('navRmToggle');
+  if(!btn) return;
+  const saved = localStorage.getItem(RM_NAV_KEY);
+  const activeView = document.querySelector('.nav-item.active')?.dataset?.view;
+  // Prefer expand when an RM page is active; else restore saved preference (default open)
+  const open = RM_NAV_VIEWS.has(activeView) ? true : (saved == null ? true : saved === '1');
+  setRmNavOpen(open);
+  btn.addEventListener('click', ()=>{
+    const group = document.getElementById('navRmGroup');
+    setRmNavOpen(!(group && group.classList.contains('open')));
+  });
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(item=>{
+  const activate = ()=>{
+    document.querySelectorAll('.nav-item[data-view]').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+item.dataset.view).classList.add('active');
+    const meta = PAGE_META[item.dataset.view];
+    document.getElementById('pageTitle').textContent = meta[0];
+    const showEms = EMS_VIEWS.has(item.dataset.view);
+    document.getElementById('flowTop').style.display = showEms ? '' : 'none';
+    [sparkChart, trendChart, energyChart, reportChart].forEach(c=>c && c.resize());
+    if(item.dataset.view === 'reports') refreshLogConfig();
+    if(item.dataset.view === 'ccm') {
+      refreshCcmFormula(); renderCcmTable();
+      if(typeof renderCcmPassAnimation==='function') renderCcmPassAnimation();
+      if(typeof renderCcmTimingPanel==='function') renderCcmTimingPanel();
+    }
+    if(item.dataset.view === 'rmmis') { renderHmdLine(); renderRmPanels(); renderRmTable(); }
+    if(item.dataset.view === 'prodreport') { if(typeof prepareProdReport==='function') prepareProdReport(); }
+    if(item.dataset.view === 'mes') { if(typeof refreshMesDashboard==='function') refreshMesDashboard(); }
+    if(typeof renderSharedLiveStrips==='function') renderSharedLiveStrips();
+    if(RM_NAV_VIEWS.has(item.dataset.view)) setRmNavOpen(true);
+    closeNav();
+  };
+  item.addEventListener('click', activate);
+  item.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); activate(); }});
+});
+initRmNavGroup();
+
+function n(v, d=0){ const x = Number(v); return Number.isFinite(x) ? x : d; }
+function fmt(v, digits=1){ return n(v).toLocaleString(undefined,{maximumFractionDigits:digits,minimumFractionDigits:digits}); }
+function pct(v, lo, hi){ if(hi===lo) return 0; return Math.max(0, Math.min(100, ((v-lo)/(hi-lo))*100)); }
+
+function setLive(mode, message){
+  const pill = document.getElementById('livePill');
+  const text = document.getElementById('liveText');
+  pill.className = 'status-pill ' + (mode==='live'?'live':mode==='demo'?'demo':'off');
+  text.textContent = mode==='live'?'LIVE':mode==='demo'?'DEMO': 'OFFLINE';
+  if(message && mode==='off') document.getElementById('alarmMsg').textContent = message;
+}
+
+function demoData(){
+  demoT += 0.12;
+  const loadKw = 900 + 900*Math.sin(demoT*0.22) + 200*Math.sin(demoT*0.7); // swings ~0–2000 for band demo
+  const load = loadKw * ACTIVE_POWER_DIV; // PLC engineering units (kW)
+  const v = 230 + 2.2*Math.sin(demoT*0.2);
+  const i = loadKw*1000/(Math.sqrt(3)*v*0.95)/10;
+  const pf = 0.93 + 0.03*Math.sin(demoT*0.15);
+  const thdBase = 4.5 + 1.2*Math.abs(Math.sin(demoT*0.4));
+  const injectBad = Math.sin(demoT*0.07) > 0.92;
+  /* Simulated DB8 BILLETS_COUNTS — slowly rising cascade Entry→…→TMT */
+  const base = Math.floor(demoT * 0.35);
+  const c = (lag) => Math.max(0, base - lag);
+  const pulse = (phase) => Math.sin(demoT * 0.9 + phase) > 0.75;
+  return {
+    '_db4_group': 'output',
+    'I_KWH_': 128450 + demoT*0.8,
+    'I_KVAH_2': 139200 + demoT*0.9,
+    'I_KVARH_2': 18200 + demoT*0.1,
+    'Total Active Power_2': load,
+    'Total Apparent Power_2': load/Math.max(pf,0.5),
+    'Total Reac Power_2': load*Math.tan(Math.acos(Math.min(0.99,pf))),
+    'Total Power Factor_2': injectBad ? 0.78 : pf,
+    '3-Ph Average Curr_2': i,
+    '3-Ph Average Volt L-L_2': (injectBad ? 268 : v) * Math.sqrt(3),
+    '3-Ph Average Volt L-N_2': injectBad ? 268 : v,
+    'Line Frequency_2': 50 + 0.05*Math.sin(demoT*0.5),
+    'O_KWH_1': 128450 + demoT*0.8,
+    'O_KVAH_1': 139200 + demoT*0.9,
+    'O_KVARH_1': 18200 + demoT*0.1,
+    'Voltage L1-N_2': v + 0.4, 'Voltage L2-N_2': v - 0.3, 'Voltage L3-N_3': v + 0.1,
+    'Voltage L1-L2_2': v*Math.sqrt(3)+0.5, 'Voltage L2-L3_2': v*Math.sqrt(3)-0.4, 'Voltage L3-L1_3': v*Math.sqrt(3)+0.2,
+    'Active Power L1_2': load/3, 'Active Power L2_2': load/3*1.02, 'Active Power L3_2': load/3*0.98,
+    'Apparent Power L1_2': load/3/pf, 'Apparent Power L2_2': load/3*1.02/pf, 'Apparent Power L3_2': load/3*0.98/pf,
+    'Reactive power L1_2': (load/3)*Math.tan(Math.acos(Math.min(0.99,pf))),
+    'Reactive power L2_2': (load/3*1.02)*Math.tan(Math.acos(Math.min(0.99,pf-0.01))),
+    'Reactive power L3_2': (load/3*0.98)*Math.tan(Math.acos(Math.min(0.99,pf+0.005))),
+    'Power Factor L1_2': pf, 'Power Factor L2_2': pf-0.01, 'Power Factor L3_2': pf+0.005,
+    'THD Current L1_2': thdBase, 'THD Current L2_2': thdBase+0.4, 'THD Current L3_2': thdBase-0.2,
+    'THD Voltage L1_2': 1.8, 'THD Voltage L2_2': 1.9, 'THD Voltage L3_2': 1.7,
+    /* DB8 HMD presence */
+    'CCM_STAND1_HMD': pulse(0), 'CCM_STAND2_HMD': pulse(1.1),
+    'CCM_RM_ENTRY_HMD': pulse(0.2), 'R3_HMD': pulse(0.5), 'CCS1_HMD': pulse(0.8),
+    'CCS2_HMD': pulse(1.2), 'DSHEAR_HMD': pulse(1.6), 'BLOCK_ENTRY_HMD': pulse(2),
+    'BLOCK_EXIT_HMD': pulse(2.4), 'TMT_HMD': pulse(2.8),
+    /* DB8 production counters */
+    'CCM_STAND1_COUNTS': c(0) + 2, 'CCM_STAND2_COUNTS': c(1) + 1,
+    'CCM_RM_ENTRY_COUNTS': c(0), 'R3_COUNTS': c(1), 'CCS1_COUNTS': c(2),
+    'CCS2_COUNTS': c(3), 'DSHEAR_COUNTS': c(4), 'BLOCK_ENTRY_COUNTS': c(5),
+    'BLOCK_EXIT_COUNTS': c(6), 'TMT_COUNTS': c(7),
+    '_billets_ok': true,
+  };
+}
+
+function evaluateAlarms(d, offline){
+  const now = new Date().toLocaleTimeString('en-GB');
+  const list = [];
+  const push = (key, sev, msg, value, limit)=>{
+    list.push({ key, sev, msg, value, limit, time: now, acked: ackedKeys.has(key) });
+  };
+  if(offline){
+    push('comm','alarm','Communication lost — bridge/PLC unreachable','—','Online');
+  } else {
+    const v = n(d['3-Ph Average Volt L-N_2']);
+    const pf = n(d['Total Power Factor_2']);
+    const f = n(d['Line Frequency_2'], 50);
+    const thdMax = Math.max(n(d['THD Current L1_2']), n(d['THD Current L2_2']), n(d['THD Current L3_2']));
+
+    if(v < LIMITS.voltAlarmLo || v > LIMITS.voltAlarmHi)
+      push('volt','alarm','Average voltage outside alarm band', fmt(v,1)+' V', `${LIMITS.voltAlarmLo}–${LIMITS.voltAlarmHi} V`);
+    else if(v < LIMITS.voltCautionLo || v > LIMITS.voltCautionHi)
+      push('volt','caution','Average voltage outside normal band', fmt(v,1)+' V', `${LIMITS.voltCautionLo}–${LIMITS.voltCautionHi} V`);
+
+    if(pf < LIMITS.pfAlarm)
+      push('pf','alarm','Power factor critically low', fmt(pf,3), `≥ ${LIMITS.pfAlarm}`);
+    else if(pf < LIMITS.pfCaution)
+      push('pf','caution','Power factor below target', fmt(pf,3), `≥ ${LIMITS.pfCaution}`);
+
+    if(thdMax > LIMITS.thdAlarm)
+      push('thd','alarm','Current THD above alarm limit', fmt(thdMax,2)+' %', `≤ ${LIMITS.thdAlarm}%`);
+    else if(thdMax > LIMITS.thdCaution)
+      push('thd','caution','Current THD elevated', fmt(thdMax,2)+' %', `≤ ${LIMITS.thdCaution}%`);
+
+    if(f < LIMITS.freqAlarmLo || f > LIMITS.freqAlarmHi)
+      push('freq','alarm','Line frequency outside alarm band', fmt(f,2)+' Hz', `${LIMITS.freqAlarmLo}–${LIMITS.freqAlarmHi} Hz`);
+    else if(f < LIMITS.freqCautionLo || f > LIMITS.freqCautionHi)
+      push('freq','caution','Line frequency outside normal band', fmt(f,2)+' Hz', `${LIMITS.freqCautionLo}–${LIMITS.freqCautionHi} Hz`);
+  }
+  activeAlarms = list;
+  renderAlarmChrome();
+  return list;
+}
+
+function renderAlarmChrome(){
+  const unacked = activeAlarms.filter(a=>!a.acked);
+  const hasAlarm = unacked.some(a=>a.sev==='alarm');
+  const hasCaution = unacked.some(a=>a.sev==='caution');
+  const banner = document.getElementById('alarmBanner');
+  banner.className = 'alarm-banner' + (hasAlarm?' has-alarm': hasCaution?' has-caution':'');
+  const count = unacked.length;
+  document.getElementById('alarmCount').textContent = count ? `${count} ACTIVE` : 'NO ALARMS';
+  document.getElementById('alarmMsg').textContent = count
+    ? unacked.map(a=>a.msg).join('  ·  ')
+    : 'System normal — monitoring PAC3200 feeder.';
+  const badge = document.getElementById('navAlarmBadge');
+  badge.textContent = String(count);
+  badge.classList.toggle('hide', !count);
+
+  const rowCls = (a)=> a.sev==='alarm' ? 'row-alarm' : (a.sev==='caution' ? 'row-caution' : '');
+  const rowHtml = (a)=>`<tr class="${rowCls(a)}">
+    <td><span class="sev sev-${a.sev}">${a.sev}</span></td>
+    <td>${a.acked?'ACK':'ACTIVE'}</td>
+    <td>${a.time}</td>
+    <td>${a.msg}</td>
+    <td>${a.value}</td>
+    <td>${a.limit}</td>
+  </tr>`;
+
+  const activeOnly = activeAlarms.filter(a=>!a.acked);
+  document.getElementById('overviewAlarmBody').innerHTML = activeOnly.length
+    ? activeOnly.map(a=>`<tr class="${rowCls(a)}">
+        <td><span class="sev sev-${a.sev}">${a.sev}</span></td>
+        <td>${a.time}</td><td>${a.msg}</td><td>${a.value}</td><td>${a.limit}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="5" class="empty">No active conditions</td></tr>`;
+
+  document.getElementById('alarmTableBody').innerHTML = activeAlarms.length
+    ? activeAlarms.map(rowHtml).join('')
+    : `<tr><td colspan="6" class="empty">No alarms</td></tr>`;
+}
+
+document.getElementById('ackBtn').addEventListener('click', ()=>{
+  activeAlarms.forEach(a=>ackedKeys.add(a.key));
+  localStorage.setItem('plc_acked', JSON.stringify([...ackedKeys]));
+  activeAlarms = activeAlarms.map(a=>({...a, acked:true}));
+  renderAlarmChrome();
+});
+document.getElementById('clearAckBtn').addEventListener('click', ()=>{
+  ackedKeys.clear();
+  localStorage.setItem('plc_acked', '[]');
+  activeAlarms = activeAlarms.map(a=>({...a, acked:false}));
+  renderAlarmChrome();
+});
+
+function kpiHTML({label, value, unit, sub, state='', barPct=null, lo='', hi=''}){
+  const bar = barPct==null ? '' : `<div class="bar"><i style="width:${barPct}%"></i></div><div class="bar-marks"><span>${lo}</span><span>${hi}</span></div>`;
+  return `<div class="kpi ${state}">
+    <div class="kpi-lbl">${label}</div>
+    <div class="kpi-val">${value}<span class="kpi-unit">${unit}</span></div>
+    <div class="kpi-sub">${sub || ''}</div>${bar}
+  </div>`;
+}
+
+/** OEM parameter cell: Label | Value | Unit */
+function paramHTML({label, value, unit='', state=''}){
+  return `<div class="param-cell ${state}">
+    <span class="pl">${label}</span>
+    <span class="pv">${value}</span>
+    <span class="pu">${unit || ''}</span>
+  </div>`;
+}
+
+function headerParamHTML(label, value, unit=''){
+  return `<div class="oem-hp"><div class="l">${label}</div><div class="v">${value}${unit?`<span class="u">${unit}</span>`:''}</div></div>`;
+}
+
+function stateForVoltage(v){
+  if(v < LIMITS.voltAlarmLo || v > LIMITS.voltAlarmHi) return 'alarm';
+  if(v < LIMITS.voltCautionLo || v > LIMITS.voltCautionHi) return 'warn';
+  return '';
+}
+function stateForPF(pf){
+  if(pf < LIMITS.pfAlarm) return 'alarm';
+  if(pf < LIMITS.pfCaution) return 'warn';
+  return '';
+}
+function stateForTHD(t){
+  if(t > LIMITS.thdAlarm) return 'alarm';
+  if(t > LIMITS.thdCaution) return 'warn';
+  return '';
+}
+
+function renderOverview(d){
+  const P = kW(d['Total Active Power_2']);
+  const S = kW(d['Total Apparent Power_2']);
+  const pf = n(d['Total Power Factor_2']);
+  const I = n(d['3-Ph Average Curr_2']);
+  const Vln = n(d['3-Ph Average Volt L-N_2']);
+  const Vll = n(d['3-Ph Average Volt L-L_2']);
+  const f = n(d['Line Frequency_2'], 50);
+  const hasAlarm = activeAlarms.some(a=>!a.acked && a.sev==='alarm');
+
+  const hp = document.getElementById('ovHeaderParams');
+  if(hp){
+    hp.innerHTML = [
+      headerParamHTML('Active power', fmt(P,1), 'kW'),
+      headerParamHTML('Apparent power', fmt(S,1), 'kVA'),
+      headerParamHTML('Voltage L-L', fmt(Vll,1), 'V'),
+      headerParamHTML('Frequency', fmt(f,2), 'Hz'),
+    ].join('');
+  }
+
+  document.getElementById('overviewKpis').innerHTML = [
+    paramHTML({label:'Active power', value:fmt(P,1), unit:'kW'}),
+    paramHTML({label:'Apparent power', value:fmt(S,1), unit:'kVA'}),
+    paramHTML({label:'Avg current', value:fmt(I,2), unit:'A'}),
+    paramHTML({label:'Avg voltage L-L', value:fmt(Vll,1), unit:'V', state:stateForVoltage(Vln)}),
+    paramHTML({label:'Power factor', value:fmt(pf,3), unit:'', state:stateForPF(pf)}),
+    paramHTML({label:'Frequency', value:fmt(f,2), unit:'Hz'}),
+    paramHTML({label:'Active energy', value:fmt(d['I_KWH_'],1), unit:'kWh'}),
+    paramHTML({label:'Apparent energy', value:fmt(d['I_KVAH_2'],1), unit:'kVAh'}),
+  ].join('');
+
+  const energized = Vll > 1 || Vln > 1;
+  const hdr = document.getElementById('hdrFlow');
+  hdr.className = 'hdr-flow' + (hasAlarm ? ' alarm' : energized ? ' on' : '');
+  document.getElementById('hdrFlowLabel').textContent = hasAlarm ? 'ALARM' : energized ? 'POWER FLOW' : 'NO SUPPLY';
+  document.getElementById('hdrFlowFreq').innerHTML = fmt(f,2) + '<span>Hz</span>';
+  document.getElementById('hdrFlowPower').textContent = fmt(P,1) + ' kW';
+  document.getElementById('hdrFlowKva').textContent = fmt(S,1) + ' kVA';
+
+  document.getElementById('flowTag').className = 'tag ' + (energized?'ok':'off');
+  document.getElementById('flowTag').textContent = energized ? 'ENERGIZED' : 'NO SUPPLY';
+  ['sldLine','sldNodeA','sldNodeB','sldIconA','sldIconB1','sldIconB2'].forEach(id=>document.getElementById(id).classList.toggle('on', energized));
+  ['sldValA1','sldValA2','sldValB1','sldValB2'].forEach(id=>document.getElementById(id).classList.toggle('on', energized));
+  document.getElementById('sldValA1').textContent = fmt(Vll,1) + ' V';
+  document.getElementById('sldValA2').textContent = fmt(I,2) + ' A';
+  document.getElementById('sldValB1').textContent = fmt(P,1) + ' kW';
+  document.getElementById('sldValB2').textContent = fmt(S,1) + ' kVA';
+
+  document.getElementById('energyPair').innerHTML = `
+    <div class="energy-box"><div class="lbl">Active energy</div><div class="val">${fmt(d['I_KWH_'],1)} <span class="unit">kWh</span></div></div>
+    <div class="energy-box"><div class="lbl">Apparent energy</div><div class="val">${fmt(d['I_KVAH_2'],1)} <span class="unit">kVAh</span></div></div>`;
+
+  const emsEl = document.getElementById('ovEmsMetrics');
+  if(emsEl){
+    emsEl.innerHTML = `
+      <div><div class="pam-lbl">Active</div><div class="pam-val">${fmt(P,1)}<span class="pam-unit">kW</span></div></div>
+      <div><div class="pam-lbl">Apparent</div><div class="pam-val">${fmt(S,1)}<span class="pam-unit">kVA</span></div></div>
+      <div><div class="pam-lbl">Voltage L-L</div><div class="pam-val">${fmt(Vll,0)}<span class="pam-unit">V</span></div></div>
+      <div><div class="pam-lbl">PF</div><div class="pam-val">${fmt(pf,3)}</div></div>`;
+  }
+  if(typeof updatePlantOverviewMis === 'function') updatePlantOverviewMis();
+}
+
+/* Per-phase metric catalog (PAC3200 DB4 Output group). Select which rows appear on L1/L2/L3 cards. */
+const PHASE_TAG_GROUPS = [
+  { id:'vln', label:'Voltage L-N', unit:'V', digits:1, scale:'none', alarm:'volt',
+    tags:{ L1:'Voltage L1-N_2', L2:'Voltage L2-N_2', L3:'Voltage L3-N_3' } },
+  { id:'vll', label:'Voltage L-L', unit:'V', digits:1, scale:'none', alarm:null,
+    tags:{ L1:'Voltage L1-L2_2', L2:'Voltage L2-L3_2', L3:'Voltage L3-L1_3' } },
+  { id:'p', label:'Total active power', unit:'kW', digits:1, scale:'kw', alarm:null,
+    tags:{ L1:'Total Active Power_2', L2:'Total Active Power_2', L3:'Total Active Power_2' } },
+  { id:'s', label:'Total apparent power', unit:'kVA', digits:1, scale:'kw', alarm:null,
+    tags:{ L1:'Total Apparent Power_2', L2:'Total Apparent Power_2', L3:'Total Apparent Power_2' } },
+  { id:'q', label:'Reactive power', unit:'kVAR', digits:1, scale:'kw', alarm:null,
+    tags:{ L1:'Reactive power L1_2', L2:'Reactive power L2_2', L3:'Reactive power L3_2' } },
+  { id:'pf', label:'Power factor', unit:'', digits:4, scale:'none', alarm:'pf',
+    tags:{ L1:'Power Factor L1_2', L2:'Power Factor L2_2', L3:'Power Factor L3_2' } },
+  { id:'thdi', label:'THD current', unit:'%', digits:2, scale:'none', alarm:'thd',
+    tags:{ L1:'THD Current L1_2', L2:'THD Current L2_2', L3:'THD Current L3_2' } },
+  { id:'thdv', label:'THD voltage', unit:'%', digits:2, scale:'none', alarm:null,
+    tags:{ L1:'THD Voltage L1_2', L2:'THD Voltage L2_2', L3:'THD Voltage L3_2' } },
+];
+const PHASE_TAG_DEFAULTS = ['vln','p','pf','thdi','thdv'];
+const PHASE_TAG_LS_KEY = 'elec_phase_tags';
+
+function loadPhaseTagSelection(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(PHASE_TAG_LS_KEY) || 'null');
+    if(Array.isArray(raw) && raw.length){
+      const ids = new Set(PHASE_TAG_GROUPS.map(g=>g.id));
+      const filtered = raw.filter(id=>ids.has(id));
+      if(filtered.length) return filtered;
+    }
+  }catch(e){ /* defaults */ }
+  return PHASE_TAG_DEFAULTS.slice();
+}
+let selectedPhaseTags = loadPhaseTagSelection();
+
+function savePhaseTagSelection(){
+  localStorage.setItem(PHASE_TAG_LS_KEY, JSON.stringify(selectedPhaseTags));
+}
+
+function phaseMetricValue(d, group, phase){
+  const key = group.tags[phase];
+  const raw = d[key];
+  if(raw == null || raw === '') return null;
+  return group.scale === 'kw' ? kW(raw) : n(raw);
+}
+
+function phaseMetricAlarmState(group, value){
+  if(value == null || !group.alarm) return '';
+  if(group.alarm === 'volt') return stateForVoltage(value) || '';
+  if(group.alarm === 'pf') return stateForPF(value) || '';
+  if(group.alarm === 'thd') return stateForTHD(value) || '';
+  return '';
+}
+
+let phaseTagListOpen = false;
+
+function setPhaseTagListOpen(open){
+  phaseTagListOpen = !!open;
+  const box = document.getElementById('phaseTagPicker');
+  const toggle = document.getElementById('phaseTagToggleBtn');
+  const done = document.getElementById('phaseTagDoneBtn');
+  const allBtn = document.getElementById('phaseTagAllBtn');
+  const defBtn = document.getElementById('phaseTagDefaultBtn');
+  const noneBtn = document.getElementById('phaseTagNoneBtn');
+  if(box) box.classList.toggle('is-collapsed', !phaseTagListOpen);
+  if(toggle) toggle.textContent = phaseTagListOpen ? 'Hide list' : 'Edit tags';
+  // Extra buttons only while editing
+  [done, allBtn, defBtn, noneBtn].forEach(el=>{
+    if(el) el.style.display = phaseTagListOpen ? '' : 'none';
+  });
+  renderPhaseTagPicker();
+}
+
+function setPhaseTagSelection(ids, opts={}){
+  const allow = new Set(PHASE_TAG_GROUPS.map(g=>g.id));
+  selectedPhaseTags = PHASE_TAG_GROUPS.map(g=>g.id).filter(id=>ids.includes(id) && allow.has(id));
+  savePhaseTagSelection();
+  // After a real selection (or clear), hide the tag table unless user is mid-edit and opts.keepOpen
+  if(!opts.keepOpen && selectedPhaseTags.length > 0) setPhaseTagListOpen(false);
+  else renderPhaseTagPicker();
+  if(lastData) renderElectrical(lastData);
+}
+
+function renderPhaseTagPicker(){
+  const list = document.getElementById('phaseTagList');
+  if(!list) return;
+  list.innerHTML = PHASE_TAG_GROUPS.map(g=>{
+    const on = selectedPhaseTags.includes(g.id);
+    return `<tr class="${on?'on':''}" data-phase-tag-row="${g.id}">
+      <td><input type="checkbox" data-phase-tag="${g.id}" ${on?'checked':''} aria-label="Show ${g.label}"></td>
+      <td><strong>${g.label}</strong>${g.unit ? ` <span class="muted">(${g.unit})</span>` : ''}</td>
+      <td class="tag-name">${g.tags.L1}</td>
+      <td class="tag-name">${g.tags.L2}</td>
+      <td class="tag-name">${g.tags.L3}</td>
+    </tr>`;
+  }).join('');
+  const hint = document.getElementById('phaseTagHint');
+  if(hint){
+    if(!selectedPhaseTags.length){
+      hint.textContent = 'No tags selected — open Edit tags to choose';
+    } else if(phaseTagListOpen){
+      hint.textContent = `${selectedPhaseTags.length} selected — click Done to hide this list`;
+    } else {
+      const names = PHASE_TAG_GROUPS.filter(g=>selectedPhaseTags.includes(g.id)).map(g=>g.label).join(' · ');
+      hint.textContent = `${selectedPhaseTags.length} selected · ${names}`;
+    }
+  }
+}
+
+function initPhaseTagPicker(){
+  const list = document.getElementById('phaseTagList');
+  if(!list || list.dataset.bound === '1') return;
+  list.dataset.bound = '1';
+  // Start collapsed when tags already chosen; open only if empty
+  setPhaseTagListOpen(selectedPhaseTags.length === 0);
+  list.addEventListener('change', (e)=>{
+    const cb = e.target.closest('input[data-phase-tag]');
+    if(!cb) return;
+    const id = cb.getAttribute('data-phase-tag');
+    const next = new Set(selectedPhaseTags);
+    if(cb.checked) next.add(id); else next.delete(id);
+    // Keep list open while ticking multiple rows
+    setPhaseTagSelection([...next], { keepOpen: true });
+  });
+  list.addEventListener('click', (e)=>{
+    if(e.target.closest('input[data-phase-tag]')) return;
+    const row = e.target.closest('[data-phase-tag-row]');
+    if(!row) return;
+    const id = row.getAttribute('data-phase-tag-row');
+    const next = new Set(selectedPhaseTags);
+    if(next.has(id)) next.delete(id); else next.add(id);
+    setPhaseTagSelection([...next], { keepOpen: true });
+  });
+  document.getElementById('phaseTagToggleBtn')?.addEventListener('click', ()=>{
+    setPhaseTagListOpen(!phaseTagListOpen);
+  });
+  document.getElementById('phaseTagDoneBtn')?.addEventListener('click', ()=>{
+    setPhaseTagListOpen(false);
+  });
+  document.getElementById('phaseTagAllBtn')?.addEventListener('click', ()=>{
+    setPhaseTagSelection(PHASE_TAG_GROUPS.map(g=>g.id), { keepOpen: true });
+  });
+  document.getElementById('phaseTagDefaultBtn')?.addEventListener('click', ()=>{
+    setPhaseTagSelection(PHASE_TAG_DEFAULTS.slice(), { keepOpen: true });
+  });
+  document.getElementById('phaseTagNoneBtn')?.addEventListener('click', ()=>{
+    setPhaseTagSelection([], { keepOpen: true });
+  });
+}
+
+function renderElectrical(d){
+  const P = kW(d['Total Active Power_2']);
+  const S = kW(d['Total Apparent Power_2']);
+  const I = n(d['3-Ph Average Curr_2']);
+  const V = n(d['3-Ph Average Volt L-N_2']);
+  const pf = n(d['Total Power Factor_2']);
+  const f = n(d['Line Frequency_2'], 50);
+  const thdMax = Math.max(n(d['THD Current L1_2']), n(d['THD Current L2_2']), n(d['THD Current L3_2']));
+
+  const hp = document.getElementById('elHeaderParams');
+  if(hp){
+    hp.innerHTML = [
+      headerParamHTML('P', fmt(P,1), 'kW'),
+      headerParamHTML('S', fmt(S,1), 'kVA'),
+      headerParamHTML('I avg', fmt(I,2), 'A'),
+      headerParamHTML('PF', fmt(pf,3), ''),
+    ].join('');
+  }
+
+  document.getElementById('qualityKpis').innerHTML = [
+    paramHTML({label:'Active power', value:fmt(P,1), unit:'kW'}),
+    paramHTML({label:'Apparent power', value:fmt(S,1), unit:'kVA'}),
+    paramHTML({label:'Avg current', value:fmt(I,2), unit:'A'}),
+    paramHTML({label:'Avg voltage L-N', value:fmt(V,1), unit:'V', state:stateForVoltage(V)}),
+    paramHTML({label:'Power factor', value:fmt(pf,3), unit:'', state:stateForPF(pf)}),
+    paramHTML({label:'Frequency', value:fmt(f,2), unit:'Hz'}),
+    paramHTML({label:'Max THD I', value:fmt(thdMax,2), unit:'%', state:stateForTHD(thdMax)}),
+    paramHTML({label:'Reactive power', value:fmt(kW(d['Total Reac Power_2']),1), unit:'kVAR'}),
+  ].join('');
+
+  const groups = PHASE_TAG_GROUPS.filter(g=>selectedPhaseTags.includes(g.id));
+  const phases = ['L1','L2','L3'];
+  document.getElementById('phaseGrid').innerHTML = phases.map(name=>{
+    let worst = '';
+    const rows = groups.map(g=>{
+      const val = phaseMetricValue(d, g, name);
+      const st = phaseMetricAlarmState(g, val);
+      if(st==='alarm') worst='alarm';
+      else if(st==='warn' && worst!=='alarm') worst='warn';
+      const disp = val==null ? '—' : fmt(val, g.digits);
+      return `<div class="faceplate-row">
+        <span class="fk">${g.label}<small>${g.tags[name]}</small></span>
+        <span class="fv">${disp}</span>
+        <span class="fu">${g.unit || ''}</span>
+      </div>`;
+    }).join('') || `<div class="faceplate-row"><span class="fk">No tags selected</span><span class="fv">—</span><span class="fu"></span></div>`;
+    const stCls = worst==='alarm'?'alarm':worst==='warn'?'warn':'ok';
+    const stTxt = worst==='alarm'?'ALARM':worst==='warn'?'CAUTION':'NORMAL';
+    return `<div class="faceplate phase ${worst}">
+      <div class="faceplate-hd">
+        <span>Phase ${name}</span>
+        <span class="st ${stCls}">${stTxt}</span>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+
+/* Hide meta + energy aliases — Raw Tags shows DB4 Output + DB8 only */
+const RAW_HIDE = new Set(['I_KWH_','I_KVAH_2','I_KVARH_2','_billets_ok','_billets_error','_db4_group']);
+function renderRaw(d){
+  const hint = document.getElementById('rawGroupHint');
+  if(hint) hint.textContent = `DB4 ${(d && d._db4_group) || 'output'} · + DB8 billets`;
+  const rows = Object.entries(d || {})
+    .filter(([k]) => !RAW_HIDE.has(k) && !k.startsWith('_'))
+    .sort((a,b) => a[0].localeCompare(b[0]));
+  document.getElementById('rawTableBody').innerHTML = rows.length
+    ? rows.map(([k,v])=>{
+        const val = typeof v==='number' ? (Number.isInteger(v) ? String(v) : v.toFixed(4))
+          : (typeof v==='boolean' ? (v?'TRUE':'FALSE') : String(v));
+        return `<tr><td>${k}</td><td>${val}</td></tr>`;
+      }).join('')
+    : `<tr><td colspan="2" class="empty">Waiting for DB4 Output…</td></tr>`;
+}
+
+function chartDefaults(){
+  return {
+    responsive:true, maintainAspectRatio:false, animation:{duration:200},
+    plugins:{legend:{labels:{color:'#94a3b8', font:{family:'IBM Plex Mono', size:10}}}},
+    scales:{
+      x:{ticks:{color:'#7b8796',font:{family:'IBM Plex Mono',size:9},maxTicksLimit:8}, grid:{color:'#2a3340'}},
+      y:{ticks:{color:'#7b8796',font:{family:'IBM Plex Mono',size:9}}, grid:{color:'#2a3340'}},
+    }
+  };
+}
+
+function ensureSpark(){
+  if(sparkChart) return sparkChart;
+  if(typeof Chart === 'undefined') return null;
+  try{
+    sparkChart = new Chart(document.getElementById('sparkChart').getContext('2d'), {
+      type:'line',
+      data:{labels:[], datasets:[
+        {label:'Active', data:[], borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,.16)', tension:.35, pointRadius:0, borderWidth:2, fill:true, yAxisID:'y'},
+        {label:'Apparent', data:[], borderColor:'#22c55e', backgroundColor:'transparent', tension:.35, pointRadius:0, borderWidth:2, borderDash:[4,3], yAxisID:'y1'},
+      ]},
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:{duration:200},
+        plugins:{
+          legend:{display:true, position:'top', align:'end', labels:{color:'#b4bec9', font:{family:'IBM Plex Mono', size:10}, boxWidth:12, boxHeight:2, padding:8}},
+        },
+        scales:{
+          x:{display:false, grid:{display:false}},
+          y:{
+            position:'left',
+            ticks:{
+              color:'#38bdf8',
+              font:{family:'IBM Plex Mono', size:9},
+              callback: function(value){ return Number(value).toLocaleString(undefined,{maximumFractionDigits:0}) + ' kW'; }
+            },
+            grid:{color:'rgba(44,53,64,.9)'}
+          },
+          y1:{
+            position:'right',
+            ticks:{
+              color:'#22c55e',
+              font:{family:'IBM Plex Mono', size:9},
+              callback: function(value){ return Number(value).toLocaleString(undefined,{maximumFractionDigits:0}) + ' kVA'; }
+            },
+            grid:{display:false}
+          }
+        }
+      }
+    });
+    return sparkChart;
+  } catch(e){ console.warn('Spark chart unavailable', e); return null; }
+}
+function ensureTrend(){
+  if(trendChart) return trendChart;
+  if(typeof Chart === 'undefined') return null;
+  try{
+    trendChart = new Chart(document.getElementById('trendChart').getContext('2d'), {
+      type:'line',
+      data:{labels:[], datasets:[
+        {label:'kW', data:[], borderColor:'#cbd5e1', backgroundColor:'rgba(203,213,225,.1)', tension:.3, pointRadius:0, borderWidth:2, fill:true, yAxisID:'y'},
+        {label:'V', data:[], borderColor:'#64748b', tension:.3, pointRadius:0, borderWidth:1.5, yAxisID:'y1'},
+      ]},
+      options:{...chartDefaults(),
+        scales:{
+          x:{ticks:{color:'#7b8796',font:{family:'IBM Plex Mono',size:9},maxTicksLimit:8},grid:{color:'#2a3340'}},
+          y:{position:'left',ticks:{color:'#cbd5e1',font:{family:'IBM Plex Mono',size:9}},grid:{color:'#2a3340'}},
+          y1:{position:'right',ticks:{color:'#64748b',font:{family:'IBM Plex Mono',size:9}},grid:{display:false}},
+        }}
+    });
+    return trendChart;
+  } catch(e){ console.warn('Trend chart unavailable', e); return null; }
+}
+function ensureEnergy(){
+  if(energyChart) return energyChart;
+  if(typeof Chart === 'undefined') return null;
+  try{
+    energyChart = new Chart(document.getElementById('energyChart').getContext('2d'), {
+      type:'line',
+      data:{labels:[], datasets:[
+        {label:'kWh', data:[], borderColor:'#94a3b8', backgroundColor:'rgba(148,163,184,.12)', tension:.3, pointRadius:0, borderWidth:2, fill:true, yAxisID:'y'},
+        {label:'kVAh', data:[], borderColor:'#64748b', tension:.3, pointRadius:0, borderWidth:2, yAxisID:'y1'},
+      ]},
+      options:{...chartDefaults(),
+        scales:{
+          x:{ticks:{color:'#7b8796',font:{family:'IBM Plex Mono',size:9},maxTicksLimit:8},grid:{color:'#2a3340'}},
+          y:{position:'left',ticks:{color:'#94a3b8',font:{family:'IBM Plex Mono',size:9}},grid:{color:'#2a3340'}},
+          y1:{position:'right',ticks:{color:'#64748b',font:{family:'IBM Plex Mono',size:9}},grid:{display:false}},
+        }}
+    });
+    return energyChart;
+  } catch(e){ console.warn('Energy chart unavailable', e); return null; }
+}
+
+function pushHistory(d){
+  const label = new Date().toLocaleTimeString('en-GB',{hour12:false,minute:'2-digit',second:'2-digit'});
+  history.labels.push(label);
+  history.P.push(kW(d['Total Active Power_2']));
+  history.S.push(kW(d['Total Apparent Power_2']));
+  history.V.push(n(d['3-Ph Average Volt L-N_2']));
+  history.I.push(n(d['3-Ph Average Curr_2']));
+  history.PF.push(n(d['Total Power Factor_2']));
+  if(history.labels.length>48){
+    ['labels','P','S','V','I','PF'].forEach(k=>history[k].shift());
+  }
+  energyHistory.labels.push(label);
+  energyHistory.KWH.push(n(d['I_KWH_']));
+  energyHistory.KVAH.push(n(d['I_KVAH_2']));
+  if(energyHistory.labels.length>60){
+    ['labels','KWH','KVAH'].forEach(k=>energyHistory[k].shift());
+  }
+
+  const spark = ensureSpark();
+  if(spark){
+    spark.data.labels = history.labels;
+    spark.data.datasets[0].data = history.P;
+    spark.data.datasets[1].data = history.S;
+    spark.update('none');
+  }
+
+  const trend = ensureTrend();
+  if(trend){
+    trend.data.labels = history.labels;
+    trend.data.datasets[0].data = history.P;
+    trend.data.datasets[1].data = history.V;
+    trend.update('none');
+  }
+
+  const energy = ensureEnergy();
+  if(energy){
+    energy.data.labels = energyHistory.labels;
+    energy.data.datasets[0].data = energyHistory.KWH;
+    energy.data.datasets[1].data = energyHistory.KVAH;
+    energy.update('none');
+  }
+}
+
+let lastData = null;
+function applyData(d, mode){
+  lastData = d;
+  window.latestPlcData = d;
+  setLive(mode);
+  document.getElementById('lastUpdate').textContent = 'Last: ' + new Date().toLocaleTimeString('en-GB');
+  evaluateAlarms(d, false);
+  renderOverview(d);
+  renderElectrical(d);
+  renderRaw(d);
+  pushHistory(d);
+  if (typeof updateProductionMis === 'function') updateProductionMis(d);
+}
+
+async function poll(){
+  const mode = document.getElementById('dataMode').value;
+  if(mode === 'demo'){
+    applyData(demoData(), 'demo');
+    return;
+  }
+  const ctrl = new AbortController();
+  const timeout = setTimeout(()=>ctrl.abort(), 2500);
+  try{
+    const res = await fetch(BRIDGE_URL, { cache:'no-store', signal: ctrl.signal });
+    clearTimeout(timeout);
+    const json = await res.json();
+    if(json.connected && json.data){
+      if(json.plc_ip) document.getElementById('sourceMeta').textContent = 'PLC ' + json.plc_ip;
+      applyData(json.data, 'live');
+      return;
+    }
+    if(mode === 'live'){
+      setLive('off', json.error || 'Bridge reachable but PLC read failed');
+      evaluateAlarms({}, true);
+      return;
+    }
+    applyData(demoData(), 'demo');
+  } catch(e){
+    clearTimeout(timeout);
+    if(mode === 'live'){
+      setLive('off', 'Cannot reach ' + BRIDGE_URL);
+      evaluateAlarms({}, true);
+      return;
+    }
+    applyData(demoData(), 'demo');
+  }
+}
+
+/* Reports — energy by date/time + disk log location */
+function toLocalInputValue(date){
+  const pad = n => String(n).padStart(2,'0');
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+function toDateInputValue(date){
+  const pad = n => String(n).padStart(2,'0');
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+}
+function setLast24h(){
+  const end = new Date();
+  const start = new Date(end.getTime() - 24*60*60*1000);
+  document.getElementById('rptStart').value = toLocalInputValue(start);
+  document.getElementById('rptEnd').value = toLocalInputValue(end);
+}
+function setReadingDay(){
+  const now = new Date();
+  let start = new Date(now); start.setHours(8,0,0,0);
+  if(now < start) start.setDate(start.getDate()-1);
+  const end = new Date(start); end.setDate(end.getDate()+1);
+  document.getElementById('rptStart').value = toLocalInputValue(start);
+  document.getElementById('rptEnd').value = toLocalInputValue(end);
+}
+function applySelectedDate(){
+  const d = document.getElementById('rptDate').value;
+  if(!d){ alert('Pick a date first (e.g. 2026-07-17).'); return; }
+  document.getElementById('rptStart').value = d + 'T00:00';
+  document.getElementById('rptEnd').value = d + 'T23:59';
+  generateReport();
+}
+function downsample(rows, maxPoints){
+  if(rows.length<=maxPoints) return rows;
+  const step = rows.length/maxPoints;
+  const out = [];
+  for(let i=0;i<maxPoints;i++) out.push(rows[Math.floor(i*step)]);
+  return out;
+}
+function ensureReportChart(){
+  if(reportChart) return reportChart;
+  reportChart = new Chart(document.getElementById('reportChart').getContext('2d'), {
+    type:'line',
+    data:{labels:[], datasets:[
+      {label:'kWh', data:[], borderColor:'#94a3b8', backgroundColor:'rgba(148,163,184,.12)', tension:.25, pointRadius:0, borderWidth:2, fill:true, yAxisID:'y'},
+      {label:'kVAh', data:[], borderColor:'#64748b', tension:.25, pointRadius:0, borderWidth:2, yAxisID:'y1'},
+    ]},
+    options:{...chartDefaults(),
+      scales:{
+        x:{ticks:{color:'#7b8796',font:{family:'IBM Plex Mono',size:9},maxTicksLimit:10},grid:{color:'#2a3340'}},
+        y:{position:'left',ticks:{color:'#94a3b8',font:{family:'IBM Plex Mono',size:9}, callback:v=>v+' kWh'},grid:{color:'#2a3340'}},
+        y1:{position:'right',ticks:{color:'#64748b',font:{family:'IBM Plex Mono',size:9}, callback:v=>v+' kVAh'},grid:{display:false}},
+      }}
+  });
+  return reportChart;
+}
+
+function fmtBytes(n){
+  n = Number(n) || 0;
+  if(n < 1024) return n + ' B';
+  if(n < 1048576) return (n/1024).toFixed(1) + ' KB';
+  return (n/1048576).toFixed(2) + ' MB';
+}
+
+function renderDataFiles(files){
+  const body = document.getElementById('dataFilesBody');
+  if(!body) return;
+  if(!files || !files.length){
+    body.innerHTML = `<tr><td colspan="4" class="empty">No files yet — keep bridge running to create logs / save heats</td></tr>`;
+    return;
+  }
+  body.innerHTML = files.map(f => `<tr>
+    <td style="font-family:var(--fm);">${f.name}</td>
+    <td>${fmtBytes(f.size)}</td>
+    <td>${(f.mtime || '').replace('T',' ')}</td>
+    <td><a class="btn" href="${BRIDGE_ORIGIN}/api/data/download/${encodeURIComponent(f.name)}" style="padding:4px 10px;font-size:12px;">Download</a></td>
+  </tr>`).join('');
+}
+
+async function refreshLogConfig(){
+  try{
+    const res = await fetch(`${BRIDGE_ORIGIN}/api/log-config`, {cache:'no-store'});
+    const cfg = await res.json();
+    document.getElementById('logDirInput').value = cfg.log_dir || '';
+    document.getElementById('logFileLabel').textContent =
+      `Energy: ${cfg.log_file || '—'} · ~${(cfg.rows_approx||0).toLocaleString()} rows · MES DB: ${cfg.mes_db || '—'}`;
+    document.getElementById('logStatus').textContent = cfg.exists ? 'LOGGING' : 'WAITING';
+    document.getElementById('printLogPath').textContent = cfg.log_dir
+      ? `Data folder: ${cfg.log_dir}` : '';
+    renderDataFiles(cfg.files || []);
+  } catch(e){
+    document.getElementById('logStatus').textContent = 'BRIDGE OFFLINE';
+    document.getElementById('logFileLabel').textContent = 'Start bridge_server.py to save live data to disk.';
+  }
+}
+
+async function saveLogDir(){
+  const log_dir = document.getElementById('logDirInput').value.trim();
+  if(!log_dir){ alert('Enter a folder path, e.g. D:\\Smart EMS and MIS Project\\Plant_Data'); return; }
+  try{
+    const res = await fetch(`${BRIDGE_ORIGIN}/api/log-config`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ log_dir }),
+    });
+    if(res.status === 404){
+      alert('Your bridge_server.py is an older version without folder save.\n\nStop the old bridge, then run:\n  python bridge_server.py\nfrom:\n  D:\\Smart EMS and MIS Project');
+      return;
+    }
+    const cfg = await res.json();
+    if(!res.ok || !cfg.ok){
+      alert(cfg.error || 'Could not set data folder.');
+      return;
+    }
+    await refreshLogConfig();
+    if(typeof refreshStores === 'function') await refreshStores();
+    alert('Data folder saved.\n\nEnergy CSV, CCM/RM heats, and MES DB will use:\n' + cfg.log_dir);
+  } catch(e){
+    alert('Could not reach bridge. Is bridge_server.py running?\n\ncd "D:\\Smart EMS and MIS Project"\npython bridge_server.py');
+  }
+}
+
+async function importHeatsFromFile(){
+  const file = document.getElementById('importHeatFile')?.files?.[0];
+  if(!file){ alert('Choose a .jsonl or .json heats file first.'); return; }
+  const kind = document.getElementById('importHeatKind').value;
+  const mode = document.getElementById('importHeatMode').value;
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('kind', kind);
+  fd.append('mode', mode);
+  try{
+    const res = await fetch(`${BRIDGE_ORIGIN}/api/data/import?kind=${encodeURIComponent(kind)}&mode=${encodeURIComponent(mode)}`, {
+      method:'POST', body: fd,
+    });
+    const j = await res.json();
+    if(!res.ok || !j.ok){ alert(j.error || 'Import failed'); return; }
+    if(typeof refreshStores === 'function') await refreshStores();
+    if(typeof renderCcmTable === 'function') renderCcmTable();
+    if(typeof renderRmTable === 'function') renderRmTable();
+    await refreshLogConfig();
+    alert(`Imported ${j.added} heats → ${j.total} total in\n${j.path}`);
+  } catch(e){
+    alert('Import failed — is bridge_server.py running?');
+  }
+}
+
+async function generateReport(){
+  const startVal = document.getElementById('rptStart').value;
+  const endVal = document.getElementById('rptEnd').value;
+  if(!startVal || !endVal){ alert('Pick both start and end date/time.'); return; }
+  let rows, energy;
+  try{
+    const [histRes, energyRes] = await Promise.all([
+      fetch(`${BRIDGE_ORIGIN}/api/history?start=${encodeURIComponent(startVal)}&end=${encodeURIComponent(endVal)}`, {cache:'no-store'}),
+      fetch(`${BRIDGE_ORIGIN}/api/energy?start=${encodeURIComponent(startVal)}&end=${encodeURIComponent(endVal)}`, {cache:'no-store'}),
+    ]);
+    rows = await histRes.json();
+    energy = await energyRes.json();
+  } catch(e){
+    alert('Could not reach bridge history API. Is bridge_server.py running?\n\nRun: python bridge_server.py');
+    return;
+  }
+  lastReportRows = rows;
+  lastReportRange = { start:startVal, end:endVal };
+  document.getElementById('reportEmpty').style.display = rows.length ? 'none' : 'block';
+  document.getElementById('reportContent').style.display = rows.length ? 'block' : 'none';
+  if(!rows.length){
+    document.getElementById('reportEmpty').textContent = 'No logged readings in that range. Keep bridge_server.py running so data is saved to disk, then try again.';
+    return;
+  }
+  const num = (r,k)=>parseFloat(r[k])||0;
+  const kwh = energy.kwh_consumed ?? (num(rows[rows.length-1],'I_KWH_')-num(rows[0],'I_KWH_'));
+  const kvah = energy.kvah_consumed ?? (num(rows[rows.length-1],'I_KVAH_2')-num(rows[0],'I_KVAH_2'));
+  const avgPF = energy.avg_pf ?? rows.reduce((s,r)=>s+num(r,'Total Power Factor_2'),0)/rows.length;
+  const avgKw = energy.avg_kw ?? rows.reduce((s,r)=>s+num(r,'Total Active Power_2')/ACTIVE_POWER_DIV,0)/rows.length;
+
+  document.getElementById('printRange').textContent =
+    `Period: ${startVal.replace('T',' ')} → ${endVal.replace('T',' ')} · ${rows.length} readings · Energy used: ${Number(kwh).toFixed(2)} kWh`;
+
+  document.getElementById('reportSummary').innerHTML = `
+    <div class="rs"><div class="l">Energy used (kWh)</div><div class="v">${Number(kwh).toFixed(2)}</div><div class="s">${Number(energy.kwh_start??0).toFixed(1)} → ${Number(energy.kwh_end??0).toFixed(1)}</div></div>
+    <div class="rs"><div class="l">Apparent energy (kVAh)</div><div class="v">${Number(kvah).toFixed(2)}</div><div class="s">${Number(energy.kvah_start??0).toFixed(1)} → ${Number(energy.kvah_end??0).toFixed(1)}</div></div>
+    <div class="rs"><div class="l">Average PF</div><div class="v">${Number(avgPF).toFixed(4)}</div><div class="s">Avg power ${Number(avgKw).toFixed(1)} kW</div></div>
+    <div class="rs"><div class="l">Readings logged</div><div class="v">${rows.length.toLocaleString()}</div><div class="s">${energy.start||''} → ${energy.end||''}</div></div>`;
+
+  const sampled = downsample(rows, 100);
+  const chart = ensureReportChart();
+  chart.data.labels = sampled.map(r=>r.timestamp.replace('T',' ').slice(5,16));
+  chart.data.datasets[0].data = sampled.map(r=>num(r,'I_KWH_'));
+  chart.data.datasets[1].data = sampled.map(r=>num(r,'I_KVAH_2'));
+  chart.update();
+  document.getElementById('reportTableBody').innerHTML = downsample(rows,200).map(r=>`<tr>
+    <td>${r.timestamp.replace('T',' ').slice(0,19)}</td>
+    <td>${num(r,'I_KWH_').toFixed(1)}</td><td>${num(r,'I_KVAH_2').toFixed(1)}</td>
+    <td>${(num(r,'Total Active Power_2')/ACTIVE_POWER_DIV).toFixed(1)}</td>
+    <td>${(num(r,'Total Apparent Power_2')/ACTIVE_POWER_DIV).toFixed(1)}</td>
+    <td>${num(r,'Total Power Factor_2').toFixed(3)}</td>
+    <td>${num(r,'3-Ph Average Curr_2').toFixed(2)}</td>
+    <td>${num(r,'3-Ph Average Volt L-N_2').toFixed(1)}</td>
+  </tr>`).join('');
+}
+
+document.getElementById('rptDate').value = toDateInputValue(new Date());
+setLast24h();
+refreshLogConfig();
+document.getElementById('last24Btn').addEventListener('click', setLast24h);
+document.getElementById('readingDayBtn').addEventListener('click', ()=>{ setReadingDay(); generateReport(); });
+document.getElementById('applyDateBtn').addEventListener('click', applySelectedDate);
+document.getElementById('genReportBtn').addEventListener('click', generateReport);
+document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+document.getElementById('useDriveDBtn').addEventListener('click', ()=>{
+  document.getElementById('logDirInput').value = 'D:\\Smart EMS and MIS Project\\Plant_Data';
+});
+document.getElementById('saveLogDirBtn').addEventListener('click', saveLogDir);
+document.getElementById('refreshDataFilesBtn')?.addEventListener('click', refreshLogConfig);
+document.getElementById('exportDataZipBtn')?.addEventListener('click', ()=>{
+  window.location.href = `${BRIDGE_ORIGIN}/api/data/export.zip`;
+});
+document.getElementById('importHeatBtn')?.addEventListener('click', importHeatsFromFile);
+document.getElementById('reloadHeatsBtn')?.addEventListener('click', async ()=>{
+  if(typeof refreshStores === 'function') await refreshStores();
+  if(typeof renderCcmTable === 'function') renderCcmTable();
+  if(typeof renderRmTable === 'function') renderRmTable();
+  alert('Heats reloaded from the selected data folder into MIS tables.');
+});
+document.getElementById('csvBtn').addEventListener('click', ()=>{
+  const s=document.getElementById('rptStart').value, e=document.getElementById('rptEnd').value;
+  if(!s||!e){ alert('Pick range first.'); return; }
+  window.location.href = `${BRIDGE_ORIGIN}/api/history.csv?start=${encodeURIComponent(s)}&end=${encodeURIComponent(e)}`;
+});
+document.getElementById('excelBtn').addEventListener('click', async ()=>{
+  if(!lastReportRows?.length){ alert('Calculate energy first.'); return; }
+  const cleanRows = lastReportRows.map(r=>({
+    Timestamp:r.timestamp, kWh:n(r['I_KWH_']), kVAh:n(r['I_KVAH_2']), kVARh:n(r['I_KVARH_2']),
+    'Active Power (kW)':n(r['Total Active Power_2'])/ACTIVE_POWER_DIV,
+    'Apparent Power (kVA)':n(r['Total Apparent Power_2'])/ACTIVE_POWER_DIV,
+    'Power Factor':n(r['Total Power Factor_2']), 'Avg Current (A)':n(r['3-Ph Average Curr_2']),
+    'Avg Voltage (V)':n(r['3-Ph Average Volt L-N_2']), 'Frequency (Hz)':n(r['Line Frequency_2']),
+  }));
+  const ws = XLSX.utils.json_to_sheet(cleanRows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Energy Report');
+  const blob = new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const name = `energy_report_${(lastReportRange.start||'').replace(/[:T]/g,'-')}.xlsx`;
+  if(window.showSaveFilePicker){
+    try{
+      const handle = await window.showSaveFilePicker({suggestedName:name, types:[{description:'Excel', accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}]});
+      const w = await handle.createWritable(); await w.write(blob); await w.close(); return;
+    } catch(e){ if(e.name==='AbortError') return; }
+  }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
+});
+
+function tickClock(){ document.getElementById('tbClock').textContent = new Date().toLocaleTimeString('en-GB'); }
+setInterval(tickClock,1000); tickClock();
+
+function startPolling(ms){
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(poll, ms);
+}
+const savedInterval = localStorage.getItem('plc_refresh_interval') || '1000';
+document.getElementById('refreshInterval').value = savedInterval;
+document.getElementById('refreshInterval').addEventListener('change', e=>{
+  localStorage.setItem('plc_refresh_interval', e.target.value);
+  startPolling(parseInt(e.target.value,10));
+});
+document.getElementById('updateNowBtn').addEventListener('click', ()=>{
+  const btn=document.getElementById('updateNowBtn'); btn.disabled=true;
+  poll().finally(()=>setTimeout(()=>{btn.disabled=false;},300));
+});
+document.getElementById('dataMode').addEventListener('change', poll);
+
+initPhaseTagPicker();
+poll();
+startPolling(parseInt(savedInterval,10));
+
+</script>
+<script src="plant_mis.js?v=20260801k"></script>
+<script src="mes_dashboard.js?v=20260801k"></script>
+<script>
+  if (typeof initMesDashboard === 'function') initMesDashboard();
+</script>
+</body>
+</html>

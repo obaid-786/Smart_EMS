@@ -1,0 +1,5 @@
+flask
+flask-cors
+python-snap7
+# optional Excel export for MES reports
+openpyxl

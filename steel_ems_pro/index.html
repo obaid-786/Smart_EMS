@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart EMS &amp; MIS</title>
+  <link rel="stylesheet" href="/pro/assets/pro.css?v=28" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <h1>Smart EMS &amp; MIS</h1>
+      </div>
+
+      <div class="nav-label">Plant</div>
+      <nav class="nav" id="navMain">
+        <button type="button" data-view="home" data-dept="plant" class="active">Plant home <span class="hint">LIVE</span></button>
+      </nav>
+
+      <div class="nav-label">Departments</div>
+      <nav class="nav nav-depts" id="navDepts">
+        <div class="dept" data-dept-group="ccm">
+          <button type="button" class="dept-hd" data-dept-toggle="ccm" aria-expanded="false">
+            <span>CCM</span><span class="dept-chev">▾</span>
+          </button>
+          <div class="dept-bd">
+            <button type="button" data-view="ccm" data-dept="ccm">Live <span class="hint">CAST</span></button>
+            <button type="button" data-view="energy" data-dept="ccm">EMS <span class="hint">kWh</span></button>
+            <button type="button" data-view="report" data-dept="ccm">MIS <span class="hint">PRINT</span></button>
+          </div>
+        </div>
+
+        <div class="dept" data-dept-group="mill">
+          <button type="button" class="dept-hd" data-dept-toggle="mill" aria-expanded="false">
+            <span>Rolling Mill</span><span class="dept-chev">▾</span>
+          </button>
+          <div class="dept-bd">
+            <button type="button" data-view="hmd" data-dept="mill">Live <span class="hint">MILL</span></button>
+            <button type="button" data-view="energy" data-dept="mill">EMS <span class="hint">kWh</span></button>
+            <button type="button" data-view="report" data-dept="mill">MIS <span class="hint">PRINT</span></button>
+            <button type="button" data-view="loss" data-dept="mill">Smart Detector <span class="hint">₹</span></button>
+          </div>
+        </div>
+
+        <div class="dept" data-dept-group="cpp">
+          <button type="button" class="dept-hd" data-dept-toggle="cpp" aria-expanded="false">
+            <span>CPP</span><span class="dept-chev">▾</span>
+          </button>
+          <div class="dept-bd">
+            <button type="button" data-view="soon" data-dept="cpp">Live <span class="hint">SOON</span></button>
+            <button type="button" data-view="soon" data-dept="cpp">EMS <span class="hint">SOON</span></button>
+            <button type="button" data-view="soon" data-dept="cpp">MIS <span class="hint">SOON</span></button>
+          </div>
+        </div>
+
+        <div class="dept" data-dept-group="dri">
+          <button type="button" class="dept-hd" data-dept-toggle="dri" aria-expanded="false">
+            <span>100 DRI</span><span class="dept-chev">▾</span>
+          </button>
+          <div class="dept-bd">
+            <button type="button" data-view="soon" data-dept="dri">Live <span class="hint">SOON</span></button>
+            <button type="button" data-view="soon" data-dept="dri">EMS <span class="hint">SOON</span></button>
+            <button type="button" data-view="soon" data-dept="dri">MIS <span class="hint">SOON</span></button>
+          </div>
+        </div>
+      </nav>
+
+      <div class="nav-label">System</div>
+      <nav class="nav">
+        <button type="button" data-view="health" data-dept="system">Health &amp; trust <span class="hint">PLC</span></button>
+        <button type="button" data-view="about" data-dept="system">About product</button>
+      </nav>
+
+      <div class="side-foot">
+        <div class="pill-row">
+          <span class="pill" id="pillConn">—</span>
+          <span class="pill" id="pillAge">—</span>
+          <span class="pill" id="pillMode">—</span>
+        </div>
+        <p class="muted" style="margin:10px 0 6px;">Previous HMI stays safe</p>
+        <a href="/" title="Open classic dashboard">← Classic HMI (full controls)</a>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="top">
+        <div>
+          <h2 id="pageTitle">Plant home</h2>
+          <p class="sub" id="pageSub">Maximum live info from classic 20260802 · same tags</p>
+        </div>
+        <div class="top-actions">
+          <span class="mono muted" id="dataFolderHint" title="All data saves here">Save: —</span>
+          <span class="mono muted" id="clock">—</span>
+          <button class="btn btn-ghost" type="button" id="btnRefresh">Refresh</button>
+          <button class="btn" type="button" id="btnResetSess" title="Reset Pro session timers">Reset timers</button>
+          <a class="btn btn-pri" href="/" style="text-decoration:none;">Open classic</a>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- HOME -->
+        <section class="view active" id="view-home">
+          <div class="hero hero-brand">
+            <h3>SUGNA SPONGE AND POWER PVT LTD</h3>
+          </div>
+
+          <div class="dept-launch no-print">
+            <button class="btn btn-pri" type="button" data-go="ccm" data-dept="ccm">CCM</button>
+            <button class="btn btn-pri" type="button" data-go="hmd" data-dept="mill">Rolling Mill</button>
+            <button class="btn" type="button" data-go="soon" data-dept="cpp">CPP · soon</button>
+            <button class="btn" type="button" data-go="soon" data-dept="dri">100 DRI · soon</button>
+          </div>
+
+          <div class="kpi-strip cols6" id="homeKpis"></div>
+          <div class="kpi-strip cols4" id="homeTimeKpis"></div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h4>Running vs idle vs stop · %</h4>
+              <div class="chart-wrap"><canvas id="chartRunIdle"></canvas></div>
+              <div class="bar-stack" id="runIdleBars"></div>
+              <p class="muted mono" id="runIdleLegend" style="margin-top:8px;">—</p>
+            </div>
+            <div class="card">
+              <h4>Mill band · HT load</h4>
+              <div class="kpi-strip cols2" id="millBandKpis"></div>
+              <div class="field-row">
+                <label>Mill start kW &gt;<input type="number" id="thrStart" value="500" /></label>
+                <label>On-load kW &gt;<input type="number" id="thrOn" value="1600" /></label>
+              </div>
+              <p class="muted" style="margin-top:8px;">Same band rules as classic HMD Production (20260802).</p>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-top:12px;">
+            <div class="card">
+              <h4>CCM strand · HMD</h4>
+              <div class="sense-row">
+                <div class="sense" id="homeSenseS1"><div class="name">Strand 1</div><div class="eye"></div><div class="cnt" id="homeCntS1">0</div></div>
+                <div class="sense" id="homeSenseS2"><div class="name">Strand 2</div><div class="eye"></div><div class="cnt" id="homeCntS2">0</div></div>
+              </div>
+              <div class="timeline" id="ccmTimeline" style="margin-top:12px;"></div>
+              <p class="muted" id="ccmTimelineNote" style="margin-top:8px;">—</p>
+            </div>
+            <div class="card">
+              <h4>Yield · electrical snapshot</h4>
+              <div class="kpi-strip cols2" id="homeYieldKpis"></div>
+              <div id="homeElec" class="muted mono" style="margin-top:10px;">—</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CCM · casting only (no mill on-load / idle / stop) -->
+        <section class="view" id="view-ccm">
+          <div class="kpi-strip cols2" id="ccmHeatStrip"></div>
+
+          <div class="card data-folder-card" style="margin-bottom:12px;">
+            <h4>Save all data · choose folder</h4>
+            <p class="muted" style="margin-top:6px;">Casting time, CCM heats, energy CSV, RM heats, EMS readings — all go into this folder (PC running bridge).</p>
+            <div class="field-row report-filters" style="margin-top:8px;">
+              <label style="flex:1;min-width:260px;">Folder path
+                <input type="text" data-log-dir-input placeholder="D:\Smart EMS and MIS Project\Plant_Data" />
+              </label>
+            </div>
+            <div class="cta no-print" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn" type="button" data-log-dir-default>Use project Plant_Data</button>
+              <button class="btn btn-pri" type="button" data-log-dir-save>Save folder</button>
+              <button class="btn" type="button" data-log-dir-refresh>Refresh list</button>
+              <button class="btn" type="button" data-log-dir-export>Export all (ZIP)</button>
+            </div>
+            <p class="muted mono" data-log-dir-meta style="margin-top:8px;">Folder: —</p>
+            <div class="rpt-scroll" style="margin-top:8px;max-height:160px;">
+              <table class="pro">
+                <thead><tr><th>File in folder</th><th>Size</th><th>Modified</th><th></th></tr></thead>
+                <tbody data-log-dir-files><tr><td colspan="4" class="muted">Save / refresh folder to list files</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="kpi-strip cols6" id="ccmKpis"></div>
+          <div class="grid-2">
+            <div class="card">
+              <h4>Strand HMD sense (TRUE = green)</h4>
+              <div class="sense-row" style="margin-top:12px;">
+                <div class="sense" id="senseS1"><div class="name">Strand 1 HMD</div><div class="eye"></div><div class="cnt" id="cntS1">0</div></div>
+                <div class="sense" id="senseS2"><div class="name">Strand 2 HMD</div><div class="eye"></div><div class="cnt" id="cntS2">0</div></div>
+              </div>
+              <p class="muted" style="margin-top:10px;">Heat number auto-generates when CCM starts (strand HMD / count edge). Same number shows on Rolling Mill.</p>
+            </div>
+            <div class="card">
+              <h4>Cast algorithm</h4>
+              <div class="timeline" id="ccmAlgo"></div>
+              <label class="chk" style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--ink2);">
+                <input type="checkbox" id="ccmAutoHeatPro" checked /> Auto heat (start on HMD · end ~75 min)
+              </label>
+              <p class="muted" style="margin-top:10px;">Mill on-load / idle / stop live under <b>Rolling Mill</b> only.</p>
+              <div class="cta" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-pri" type="button" id="btnCcmStartHeat">Start heat now</button>
+                <button class="btn" type="button" id="btnCcmEndHeat">End heat</button>
+                <button class="btn" type="button" data-go="hmd" data-dept="mill">Open Rolling Mill</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ROLLING MILL · all mill timing / HMD / SEC (expand panels) -->
+        <section class="view" id="view-hmd">
+          <div class="kpi-strip cols6" id="hmdKpis"></div>
+
+          <div class="acc open" data-acc="timing">
+            <button type="button" class="acc-hd" data-acc-toggle="timing">
+              <span>On-load · Idle · Stop time</span>
+              <span class="acc-chev">▾</span>
+            </button>
+            <div class="acc-bd">
+              <div class="kpi-strip cols4" id="hmdTimeKpis"></div>
+              <div class="grid-2">
+                <div class="card" style="padding:12px;">
+                  <div class="chart-wrap"><canvas id="chartHmdTime"></canvas></div>
+                  <div class="bar-stack" id="hmdBars"></div>
+                  <p class="muted mono" id="hmdTimeLegend" style="margin-top:8px;">—</p>
+                </div>
+                <div class="card" style="padding:12px;">
+                  <h4>Mill band thresholds</h4>
+                  <div class="kpi-strip cols3" id="rmBandKpis"></div>
+                  <div class="field-row">
+                    <label>Mill start kW &gt;<input type="number" id="thrStartRm" value="500" /></label>
+                    <label>On-load kW &gt;<input type="number" id="thrOnRm" value="1600" /></label>
+                  </div>
+                  <p class="muted" style="margin-top:8px;">Same rules as classic HMD Production.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="acc open" data-acc="line">
+            <button type="button" class="acc-hd" data-acc-toggle="line">
+              <span>HMD material line (Entry → TMT)</span>
+              <span class="acc-chev">▾</span>
+            </button>
+            <div class="acc-bd">
+              <div class="kpi-strip cols4" id="hmdLine"></div>
+              <div class="hmd-flow" id="hmdFlowFull"></div>
+            </div>
+          </div>
+
+          <div class="acc open" data-acc="sec">
+            <button type="button" class="acc-hd" data-acc-toggle="sec">
+              <span>Util · availability · SEC · actions</span>
+              <span class="acc-chev">▾</span>
+            </button>
+            <div class="acc-bd">
+              <div class="kpi-strip cols2" id="hmdSecKpis"></div>
+              <div class="cta" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                <a class="btn btn-pri" href="/" style="text-decoration:none;">Classic HMD · Production</a>
+                <a class="btn" href="/" style="text-decoration:none;">Classic RM heat Start / End</a>
+                <button class="btn" type="button" id="btnResetSessRm">Reset mill timers</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- EMS ENERGY · full plant electrical + session + production -->
+        <section class="view" id="view-energy">
+          <div class="kpi-strip cols2" id="emsHeatStrip"></div>
+
+          <!-- Period productivity + energy meter (date / time wise) — Rolling Mill EMS focus -->
+          <div class="card" id="emsPeriodCard" style="margin-bottom:12px;">
+            <h4>Rolling Mill productivity · On-load / Idle / Stop</h4>
+            <div class="field-row report-filters" style="margin-top:8px;">
+              <label>Window
+                <select id="emsWindowPreset">
+                  <option value="plant24" selected>Plant day (start hour → +24h)</option>
+                  <option value="prevPlant">Previous plant day</option>
+                  <option value="last24">Last 24 hours</option>
+                  <option value="today">Today 00:00 → now</option>
+                  <option value="custom">Custom from / to</option>
+                </select>
+              </label>
+              <label>Day start hour
+                <input type="number" id="emsDayStartHour" min="0" max="23" step="1" value="9" title="e.g. 9 = 09:00 → next day 09:00" />
+              </label>
+              <label>From date &amp; time
+                <input type="datetime-local" id="emsFromTime" />
+              </label>
+              <label>To date &amp; time
+                <input type="datetime-local" id="emsToTime" />
+              </label>
+              <label>Month (day-wise Excel)
+                <input type="month" id="emsMonth" />
+              </label>
+            </div>
+            <div class="cta no-print" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-pri" type="button" id="btnEmsPeriodLoad">Calculate &amp; save</button>
+              <button class="btn" type="button" id="btnEmsMonthExcel">Month Excel</button>
+              <button class="btn" type="button" id="btnEmsPrint">Print</button>
+              <button class="btn" type="button" id="btnEmsExcel">Export period Excel</button>
+            </div>
+            <p class="muted mono" id="emsPeriodMeta" style="margin-top:8px;">Pick window (e.g. 9AM→next 9AM) → Calculate &amp; save · Month Excel for full month day+time</p>
+            <div class="kpi-strip cols4" id="emsMeterPeriodKpis" style="margin-top:10px;"></div>
+            <div class="kpi-strip cols4" id="emsMeterCalcKpis"></div>
+            <div class="kpi-strip cols4" id="emsPeriodTimeKpis" style="margin-top:10px;"></div>
+            <div class="kpi-strip cols4" id="emsPeriodExtraKpis"></div>
+            <div class="grid-2" style="margin-top:10px;">
+              <div class="card" style="padding:12px;">
+                <h4>Period · % split</h4>
+                <div class="chart-wrap"><canvas id="chartEmsPeriod"></canvas></div>
+                <div class="bar-stack" id="emsPeriodBars"></div>
+                <p class="muted mono" id="emsPeriodNote" style="margin-top:8px;">—</p>
+              </div>
+              <div class="card" style="padding:12px;">
+                <h4>From saved RM heats (same range)</h4>
+                <div class="kpi-strip cols2" id="emsPeriodHeatKpis"></div>
+                <p class="muted" style="margin-top:8px;">Heat-wise timers help compare log bands vs ended heats.</p>
+              </div>
+            </div>
+          </div>
+          <div id="emsPrintSheet" class="print-sheet" aria-hidden="true"></div>
+
+          <div class="kpi-strip cols6" id="energyKpis"></div>
+          <div class="kpi-strip cols6" id="energyMeterKpis"></div>
+          <div class="kpi-strip cols4" id="energyTimeKpis"></div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h4>Live session · On-load / Idle / Stop · %</h4>
+              <div class="chart-wrap"><canvas id="chartEnergyTime"></canvas></div>
+              <div class="bar-stack" id="energyBars"></div>
+              <p class="muted mono" id="energyTimeNote">—</p>
+            </div>
+            <div class="card">
+              <h4>Session energy · mill bands</h4>
+              <div class="kpi-strip cols3" id="energyBandKpis"></div>
+              <div class="field-row">
+                <label>Mill start kW &gt;<input type="number" id="thrStartEms" value="500" /></label>
+                <label>On-load kW &gt;<input type="number" id="thrOnEms" value="1600" /></label>
+              </div>
+              <p class="muted mono" id="energyQuality" style="margin-top:10px;">—</p>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-top:12px;">
+            <div class="card">
+              <h4>Phase detail (L1 · L2 · L3)</h4>
+              <div style="overflow:auto;">
+                <table class="pro">
+                  <thead>
+                    <tr><th>Phase</th><th>V L-N</th><th>V L-L</th><th>kW</th><th>kVA</th><th>kVAr</th><th>PF</th><th>THD I%</th><th>THD V%</th></tr>
+                  </thead>
+                  <tbody id="emsPhaseBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <h4>Production context (same live tags)</h4>
+              <div class="kpi-strip cols2" id="emsProdKpis"></div>
+              <div class="kpi-strip cols2" id="emsProdKpis2" style="margin-top:10px;"></div>
+              <p class="muted" id="emsProdNote" style="margin-top:10px;">—</p>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- SMART LOSS DETECTOR · Rolling Mill -->
+        <section class="view" id="view-loss">
+          <div class="card" style="margin-bottom:12px;">
+            <h4>Smart Detector · settings</h4>
+            <div class="field-row report-filters" style="margin-top:8px;">
+              <label>Unit price (₹ / kWh)
+                <input type="number" id="lossPrice" value="8" min="0" step="0.1" />
+              </label>
+              <label>Util target %
+                <input type="number" id="lossUtilTarget" value="85" min="50" max="100" step="1" />
+              </label>
+            </div>
+            <p class="muted" style="margin:10px 0 4px;font-size:12px;">PF · THD I · THD V limits — auto from energy meter (DB4)</p>
+            <div class="kpi-strip cols3" id="lossMeterAutoKpis"></div>
+            <div class="field-row report-filters" style="margin-top:8px;">
+              <label>From date &amp; time
+                <input type="datetime-local" id="lossFromTime" />
+              </label>
+              <label>To date &amp; time
+                <input type="datetime-local" id="lossToTime" />
+              </label>
+            </div>
+            <div class="cta no-print" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-pri" type="button" id="btnLossCalc">Calculate loss</button>
+              <button class="btn" type="button" id="btnLossPrint">Print</button>
+              <button class="btn" type="button" id="btnLossExcel">Export Excel</button>
+            </div>
+            <p class="muted mono" id="lossMeta" style="margin-top:8px;">Set price (default ₹8/unit) → Calculate loss</p>
+          </div>
+
+          <div class="kpi-strip cols4" id="lossTotalKpis"></div>
+          <div class="kpi-strip cols6" id="lossFactorKpis"></div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h4>Loss mix · %</h4>
+              <div class="chart-wrap"><canvas id="chartLossMix"></canvas></div>
+              <div class="bar-stack" id="lossMixBars"></div>
+              <p class="muted mono" id="lossMixNote" style="margin-top:8px;">—</p>
+            </div>
+            <div class="card">
+              <h4>Each factor vs total · %</h4>
+              <div class="chart-wrap" style="height:220px;"><canvas id="chartLossBars"></canvas></div>
+              <p class="muted" id="lossAlgoNote" style="margin-top:10px;font-size:13px;line-height:1.45;">—</p>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-top:12px;">
+            <div class="card">
+              <h4>Drivers (live / period)</h4>
+              <div class="kpi-strip cols2" id="lossDriverKpis"></div>
+            </div>
+            <div class="card">
+              <h4>What to improve</h4>
+              <div id="lossActions" class="loss-actions">—</div>
+            </div>
+          </div>
+
+          <div id="lossPrintSheet" class="print-sheet" aria-hidden="true"></div>
+        </section>
+
+        <!-- REPORT -->
+        <section class="view" id="view-report">
+          <div class="card report-toolbar no-print">
+            <h4>Select report <span class="muted" id="rptDeptLabel" style="font-weight:600;letter-spacing:0.06em;"></span></h4>
+            <div class="field-row report-filters">
+              <label>Report type
+                <select id="rptType">
+                  <option value="date">Date wise</option>
+                  <option value="time">Time wise</option>
+                  <option value="heat">Heat wise</option>
+                </select>
+              </label>
+              <label id="rptWrapFromDate">From date
+                <input type="date" id="rptFromDate" />
+              </label>
+              <label id="rptWrapToDate">To date
+                <input type="date" id="rptToDate" />
+              </label>
+              <label id="rptWrapFromTime" hidden>From date &amp; time
+                <input type="datetime-local" id="rptFromTime" />
+              </label>
+              <label id="rptWrapToTime" hidden>To date &amp; time
+                <input type="datetime-local" id="rptToTime" />
+              </label>
+              <label id="rptWrapHeat" hidden>Heat no.
+                <select id="rptHeat"><option value="">— Load heats first —</option></select>
+              </label>
+            </div>
+            <div class="cta" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-pri" type="button" id="btnRptLoad">Load report</button>
+              <button class="btn" type="button" id="btnRptPrint">Print</button>
+              <button class="btn" type="button" id="btnRptExcel">Export Excel</button>
+            </div>
+            <p class="muted mono" id="rptMeta" style="margin-top:10px;">Choose type → Load report</p>
+          </div>
+
+          <div class="kpi-strip cols6" id="reportKpis"></div>
+          <div class="kpi-strip cols4" id="reportTimeKpis"></div>
+
+          <div id="rptScreen">
+            <div class="rpt-tables">
+              <div class="card" id="rptCcmCard">
+                <h4>CCM heats</h4>
+                <div class="rpt-scroll">
+                  <table class="pro rpt">
+                    <thead><tr><th>Heat</th><th>Started</th><th>Ended</th><th>S1</th><th>S2</th><th>Pcs</th><th>t</th></tr></thead>
+                    <tbody id="rptCcmBody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="card" id="rptRmCard">
+                <h4>Rolling Mill heats · time &amp; SEC</h4>
+                <div class="rpt-scroll">
+                  <table class="pro rpt">
+                    <thead><tr><th>Heat</th><th>Ended</th><th>R3</th><th>TMT</th><th>Miss</th><th>t</th><th>On-load</th><th>Idle</th><th>Util%</th><th>kWh/t</th></tr></thead>
+                    <tbody id="rptRmBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="rptPrintSheet" class="print-sheet" aria-hidden="true"></div>
+        </section>
+
+        <!-- FUTURE DEPARTMENTS -->
+        <section class="view" id="view-soon">
+          <div class="hero">
+            <div class="kicker" id="soonKicker">Next department</div>
+            <h3 id="soonTitle">Coming soon</h3>
+            <p class="lead" id="soonLead">This department will get Live · EMS · MIS screens like CCM and Rolling Mill.</p>
+            <div class="cta">
+              <button class="btn btn-pri" type="button" data-go="home" data-dept="plant">Back to Plant home</button>
+              <button class="btn" type="button" data-go="hmd" data-dept="mill">Open Rolling Mill</button>
+            </div>
+          </div>
+          <div class="grid-3" id="soonRoadmap"></div>
+        </section>
+
+        <!-- HEALTH -->
+        <section class="view" id="view-health">
+          <div class="grid-3" id="healthCards"></div>
+          <div class="card data-folder-card" style="margin-top:12px;">
+            <h4>Plant data folder · choose where everything saves</h4>
+            <p class="muted" style="margin-top:6px;">Energy log · plant_live.jsonl · ccm_heats.jsonl · rm_heats.jsonl · ems_readings.jsonl · MES DB</p>
+            <div class="field-row report-filters" style="margin-top:8px;">
+              <label style="flex:1;min-width:260px;">Folder path
+                <input type="text" data-log-dir-input placeholder="D:\Smart EMS and MIS Project\Plant_Data" />
+              </label>
+            </div>
+            <div class="cta no-print" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn" type="button" data-log-dir-default>Use project Plant_Data</button>
+              <button class="btn btn-pri" type="button" data-log-dir-save>Save folder</button>
+              <button class="btn" type="button" data-log-dir-refresh>Refresh list</button>
+              <button class="btn" type="button" data-log-dir-export>Export all (ZIP)</button>
+            </div>
+            <p class="muted mono" data-log-dir-meta style="margin-top:8px;">Folder: —</p>
+            <div class="rpt-scroll" style="margin-top:8px;max-height:220px;">
+              <table class="pro">
+                <thead><tr><th>File in folder</th><th>Size</th><th>Modified</th><th></th></tr></thead>
+                <tbody data-log-dir-files><tr><td colspan="4" class="muted">Save / refresh folder to list files</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="margin-top:12px;">
+            <h4>Trust checklist</h4>
+            <p class="muted">PLC · DB8 · poll age · session timers · thresholds · Classic at <span class="mono">/</span> · Pro at <span class="mono">/pro/</span></p>
+          </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section class="view" id="view-about">
+          <div class="hero hero-about">
+            <p class="lead mono">Version 1.0</p>
+            <p class="lead" style="margin-top:10px;">Coding by Amazad Ali</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <script src="/pro/assets/pro.js?v=28"></script>
+</body>
+</html>

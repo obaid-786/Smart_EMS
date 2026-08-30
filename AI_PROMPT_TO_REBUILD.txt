@@ -1,0 +1,42 @@
+================================================================================
+AI PROMPT — paste into Cursor / ChatGPT to rebuild or extend Smart EMS & MIS
+================================================================================
+
+You are building / extending "Smart EMS & MIS" for SUGNA SPONGE AND POWER PVT LTD.
+
+STACK
+- Python Flask bridge_server.py on port 5000, run from project ROOT only.
+- pac3200_reader.py (python-snap7) reads S7-1200 DB4 PAC3200 + DB8 billets/HMD every 1s.
+- Classic HMI at / from plc_live_monitor.html + plant_mis.js (keep safe; do not break).
+- Pro UI at /pro/ from steel_ems_pro/ (index.html, assets/pro.js, assets/pro.css) — additive only.
+- Persist all plant data into a user-selected folder via GET/POST /api/log-config → log_config.json.
+- Files in that folder: pac3200_log.csv, plant_live.jsonl, ccm_heats.jsonl, rm_heats.jsonl,
+  ems_readings.jsonl, plant_mes.sqlite3.
+
+CCM CASTING RULES
+- While casting: show Casting time (running) + auto end ~75 min.
+- On heat end (manual or auto): SAVE castSec + heat data to ccm_heats.jsonl BEFORE reset.
+- When stopped: show Next heat tentative (cycle ~2.3 h from startedAt), not casting clock.
+- On next heat start: reset casting timer; share heatNo with Rolling Mill via localStorage
+  key steel_ems_shared_heat.
+
+ROLLING MILL EMS
+- Presets for 24h windows (plant day start hour default 9 → next day 9).
+- Calculate meter ΔkWh/ΔkVAh/ΔkVArh + calculated ∫kW/kVA/kVAr; auto-save to ems_readings.jsonl.
+- Month Excel: one row per plant day with window start/end, meter start/end/delta,
+  calculated kWh/kVAh/kVArh.
+- APIs: /api/energy, /api/energy/days, /api/energy/month.xls, /api/bands.
+
+UI RULES
+- Sidebar brand: only "Smart EMS & MIS".
+- Departments accordion (CCM, Rolling Mill, CPP, 100 DRI) start minimized.
+- CCM Live has NO mill on-load/idle/stop (those belong to Rolling Mill).
+- MIS RM heats table full width with strong header focus.
+- Pro data folder chooser on CCM Live + Health; top bar shows Save path.
+- Bump ?v= cache on pro.js/pro.css/index.html after edits.
+
+DELIVER
+- Keep classic HMI working.
+- Explain how to run: pip install -r requirements.txt && python bridge_server.py
+
+================================================================================
