@@ -41,10 +41,10 @@ from mes import config as mes_config
 POLL_INTERVAL_SECONDS = 1
 CONFIG_FILE = os.path.join(BASE_DIR, "log_config.json")
 DEFAULT_LOG_DIR = r"D:\Smart EMS and MIS Project\Plant_Data"
-LOG_FILENAME = "pac3200_log.csv"
-LIVE_JSONL = "plant_live.jsonl"  # full snapshot every 1 s
+LOG_FILENAME = "pac3200_log.csv"       # legacy fallback (still read)
+LIVE_JSONL = "plant_live.jsonl"        # full snapshot every 1 s
 DATA_FILES = (
-    "pac3200_log.csv",
+    "pac3200_log.csv",                 # legacy, will be packed if exists
     "plant_live.jsonl",
     "ccm_heats.jsonl",
     "rm_heats.jsonl",
@@ -74,6 +74,37 @@ _latest = {
 _log_dir = DEFAULT_LOG_DIR
 _log_file = os.path.join(DEFAULT_LOG_DIR, LOG_FILENAME)
 
+# ──────────────────────────────────────────────────────────────────────────────
+# NEW: Daily CSV rotation helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _today_str():
+    """Return today's date as YYYY-MM-DD."""
+    return datetime.now().date().isoformat()
+
+def _get_log_file_path(date_str=None):
+    """Return the path of the CSV log file for a given date (default: today)."""
+    date_str = date_str or _today_str()
+    return os.path.join(_log_dir, f"pac3200_log_{date_str}.csv")
+
+def _list_all_log_files():
+    """
+    Return a list of all CSV log files (dated + legacy) in the log dir.
+    Sorted by filename for deterministic order.
+    """
+    if not os.path.isdir(_log_dir):
+        return []
+    files = []
+    for f in os.listdir(_log_dir):
+        if f == "pac3200_log.csv":            # legacy file
+            files.append(os.path.join(_log_dir, f))
+        elif f.startswith("pac3200_log_") and f.endswith(".csv"):
+            files.append(os.path.join(_log_dir, f))
+    return sorted(files)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Existing functions (modified where needed)
+# ──────────────────────────────────────────────────────────────────────────────
 
 def _apply_data_dir(folder: str):
     """Point CSV log, heats JSONL, and MES SQLite at the selected folder."""
@@ -81,13 +112,12 @@ def _apply_data_dir(folder: str):
     folder = (folder or DEFAULT_LOG_DIR).strip()
     os.makedirs(folder, exist_ok=True)
     _log_dir = folder
-    _log_file = os.path.join(_log_dir, LOG_FILENAME)
+    _log_file = _get_log_file_path()      # set to today's dated file
     mes_config.set_data_dir(folder)
     try:
         mes_db.init_db(seed_users=True)
     except Exception:
         traceback.print_exc()
-
 
 def _load_config():
     global _log_dir, _log_file
@@ -101,11 +131,9 @@ def _load_config():
             traceback.print_exc()
     _apply_data_dir(folder)
 
-
 def _save_config():
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump({"log_dir": _log_dir}, f, indent=2)
-
 
 def _list_data_files():
     files = []
@@ -127,25 +155,28 @@ def _list_data_files():
         return [], str(exc)
     return files, None
 
-
 def _ensure_log_dir_and_file():
+    """Ensure the daily log file exists and has a header. Also update _log_file."""
+    global _log_file
     os.makedirs(_log_dir, exist_ok=True)
-    if not os.path.exists(_log_file):
-        with open(_log_file, "w", newline="", encoding="utf-8") as f:
+    current_log = _get_log_file_path()   # today's file
+    # If we've switched to a new day, update _log_file
+    _log_file = current_log
+    if not os.path.exists(current_log):
+        with open(current_log, "w", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow(CSV_HEADER)
     else:
         try:
-            with open(_log_file, "r", newline="", encoding="utf-8") as f:
+            with open(current_log, "r", newline="", encoding="utf-8") as f:
                 first = f.readline().strip()
             expected = ",".join(CSV_HEADER)
             if first and first != expected:
-                bak = _log_file.replace(".csv", f"_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
-                os.replace(_log_file, bak)
-                with open(_log_file, "w", newline="", encoding="utf-8") as f:
+                bak = current_log.replace(".csv", f"_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
+                os.replace(current_log, bak)
+                with open(current_log, "w", newline="", encoding="utf-8") as f:
                     csv.writer(f).writerow(CSV_HEADER)
         except Exception:
             traceback.print_exc()
-
 
 def _csv_cell(v):
     if isinstance(v, bool):
@@ -154,12 +185,12 @@ def _csv_cell(v):
         return ""
     return v
 
-
 def _log_row(data, ts):
     """Auto-save every 1 s: wide CSV + full JSONL snapshot."""
     _ensure_log_dir_and_file()
     iso = datetime.fromtimestamp(ts).isoformat(timespec="seconds")
     row = [iso] + [_csv_cell(data.get(field, "")) for field in LOG_FIELDS]
+    # Write to the current dated file (already ensured)
     with open(_log_file, "a", newline="", encoding="utf-8") as f:
         csv.writer(f).writerow(row)
 
@@ -180,7 +211,6 @@ def _log_row(data, ts):
     jsonl_path = os.path.join(_log_dir, LIVE_JSONL)
     with open(jsonl_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(snap, ensure_ascii=False) + "\n")
-
 
 def _poll_loop():
     reader = PLCReader()
@@ -225,7 +255,6 @@ def _poll_loop():
         elapsed = time.time() - t0
         time.sleep(max(0.05, POLL_INTERVAL_SECONDS - elapsed))
 
-
 def _parse_dt(value):
     if not value:
         return None
@@ -240,31 +269,53 @@ def _parse_dt(value):
             continue
     return None
 
-
 def _read_history(start_dt, end_dt):
-    _ensure_log_dir_and_file()
+    """
+    Read rows from all log files that could contain data in the range.
+    Filters by timestamp.
+    """
+    all_files = _list_all_log_files()
     rows = []
-    with open(_log_file, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
+    for path in all_files:
+        # Determine file date from name (if any) for a quick skip
+        fname = os.path.basename(path)
+        file_date = None
+        if fname.startswith("pac3200_log_") and fname.endswith(".csv"):
+            date_part = fname[len("pac3200_log_"):-4]
             try:
-                row_ts = datetime.fromisoformat(row["timestamp"]).replace(tzinfo=None)
-            except Exception:
-                continue
-            if start_dt and row_ts < start_dt:
-                continue
-            if end_dt and row_ts > end_dt:
-                continue
-            rows.append(row)
-    return rows
+                file_date = datetime.strptime(date_part, "%Y-%m-%d").date()
+            except ValueError:
+                file_date = None
 
+        # Skip files whose date cannot overlap the range
+        if file_date:
+            file_start = datetime.combine(file_date, datetime.min.time())
+            file_end = datetime.combine(file_date, datetime.max.time())
+            if start_dt and file_end < start_dt:
+                continue
+            if end_dt and file_start > end_dt:
+                continue
+        # For legacy file (pac3200_log.csv), we assume it may contain any data; include it.
+
+        with open(path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                try:
+                    row_ts = datetime.fromisoformat(row["timestamp"]).replace(tzinfo=None)
+                except Exception:
+                    continue
+                if start_dt and row_ts < start_dt:
+                    continue
+                if end_dt and row_ts > end_dt:
+                    continue
+                rows.append(row)
+    return rows
 
 def _row_num(r, k):
     try:
         return float(r.get(k) or 0)
     except (TypeError, ValueError):
         return 0.0
-
 
 def _new_energy_bucket():
     return {
@@ -287,7 +338,6 @@ def _new_energy_bucket():
         "_prev_kva": 0.0,
         "_prev_kvar": 0.0,
     }
-
 
 def _accumulate_energy_row(bucket, row, ts):
     kw = _row_num(row, "Total Active Power_2")
@@ -331,7 +381,6 @@ def _accumulate_energy_row(bucket, row, ts):
     bucket["_prev_kw"] = kw
     bucket["_prev_kva"] = kva
     bucket["_prev_kvar"] = kvar
-
 
 def _finalize_energy_bucket(bucket, query_start=None, query_end=None, extra=None):
     if not bucket or bucket["readings"] <= 0:
@@ -392,62 +441,56 @@ def _finalize_energy_bucket(bucket, query_start=None, query_end=None, extra=None
         out.update(extra)
     return out
 
-
 def _plant_day_id(ts, day_start_hour):
     """Plant day labeled by the calendar date when the window started."""
     adj = ts - timedelta(hours=int(day_start_hour) % 24)
     return adj.date()
 
-
 def _scan_energy(start_dt, end_dt, group_plant_day=False, day_start_hour=9):
     """
-    Stream pac3200_log.csv once.
+    Scan all relevant CSV files and compute energy summary.
     - group_plant_day=False → one summary dict
     - group_plant_day=True  → {"days":[...], "totals":{...}} for each 24h plant day
     """
-    _ensure_log_dir_and_file()
+    rows = _read_history(start_dt, end_dt)
     q_start = start_dt.isoformat(timespec="seconds") if start_dt else None
     q_end = end_dt.isoformat(timespec="seconds") if end_dt else None
     hour = int(day_start_hour) % 24
 
-    if not group_plant_day:
-        bucket = _new_energy_bucket()
-        with open(_log_file, newline="", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                try:
-                    ts = datetime.fromisoformat(str(row.get("timestamp", "")).replace("Z", "")).replace(tzinfo=None)
-                except Exception:
-                    continue
-                if start_dt and ts < start_dt:
-                    continue
-                if end_dt and ts > end_dt:
-                    # CSV is chronological — stop early
-                    if start_dt:
-                        break
-                    continue
-                _accumulate_energy_row(bucket, row, ts)
-        return _finalize_energy_bucket(bucket, q_start, q_end)
-
-    days = {}
-    with open(_log_file, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
+    # Process rows (already filtered by time range)
+    def _accumulate_from_rows(rows, bucket):
+        for row in rows:
             try:
                 ts = datetime.fromisoformat(str(row.get("timestamp", "")).replace("Z", "")).replace(tzinfo=None)
             except Exception:
                 continue
+            # Already filtered by start/end, but double-check
             if start_dt and ts < start_dt:
                 continue
             if end_dt and ts > end_dt:
-                if start_dt:
-                    break
                 continue
-            day_id = _plant_day_id(ts, hour)
-            key = day_id.isoformat()
-            if key not in days:
-                days[key] = _new_energy_bucket()
-            _accumulate_energy_row(days[key], row, ts)
+            _accumulate_energy_row(bucket, row, ts)
+
+    if not group_plant_day:
+        bucket = _new_energy_bucket()
+        _accumulate_from_rows(rows, bucket)
+        return _finalize_energy_bucket(bucket, q_start, q_end)
+
+    days = {}
+    for row in rows:
+        try:
+            ts = datetime.fromisoformat(str(row.get("timestamp", "")).replace("Z", "")).replace(tzinfo=None)
+        except Exception:
+            continue
+        if start_dt and ts < start_dt:
+            continue
+        if end_dt and ts > end_dt:
+            continue
+        day_id = _plant_day_id(ts, hour)
+        key = day_id.isoformat()
+        if key not in days:
+            days[key] = _new_energy_bucket()
+        _accumulate_energy_row(days[key], row, ts)
 
     day_rows = []
     for key in sorted(days.keys()):
@@ -496,7 +539,6 @@ def _scan_energy(start_dt, end_dt, group_plant_day=False, day_start_hour=9):
     }
     return {"ok": True, "days": day_rows, "totals": totals, "day_start_hour": hour}
 
-
 def _energy_from_rows(rows):
     """Legacy helper used by callers that already loaded CSV rows."""
     bucket = _new_energy_bucket()
@@ -508,6 +550,9 @@ def _energy_from_rows(rows):
         _accumulate_energy_row(bucket, row, ts)
     return _finalize_energy_bucket(bucket)
 
+# ──────────────────────────────────────────────────────────────────────────────
+# API Endpoints (mostly unchanged)
+# ──────────────────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -517,9 +562,7 @@ def index():
     resp.headers["Pragma"] = "no-cache"
     return resp
 
-
 PRO_DIR = os.path.join(BASE_DIR, "steel_ems_pro")
-
 
 @app.route("/pro")
 @app.route("/pro/")
@@ -529,7 +572,6 @@ def steel_ems_pro_index():
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     resp.headers["Pragma"] = "no-cache"
     return resp
-
 
 @app.route("/pro/<path:asset>")
 def steel_ems_pro_assets(asset: str):
@@ -544,12 +586,10 @@ def steel_ems_pro_assets(asset: str):
         resp.headers["Pragma"] = "no-cache"
     return resp
 
-
 @app.route("/api/live")
 def live():
     with _lock:
         return jsonify(dict(_latest))
-
 
 @app.route("/api/history")
 def history():
@@ -558,7 +598,6 @@ def history():
     if end_dt and len(request.args.get("end", "")) <= 10:
         end_dt = end_dt.replace(hour=23, minute=59, second=59)
     return jsonify(_read_history(start_dt, end_dt))
-
 
 @app.route("/api/energy")
 def energy():
@@ -569,9 +608,8 @@ def energy():
     summary = _scan_energy(start_dt, end_dt, group_plant_day=False)
     summary["query_start"] = request.args.get("start")
     summary["query_end"] = request.args.get("end")
-    summary["log_file"] = _log_file
+    summary["log_file"] = _log_file  # this now returns today's file, but that's fine
     return jsonify(summary)
-
 
 @app.route("/api/energy/days")
 def energy_days():
@@ -608,7 +646,6 @@ def energy_days():
     result = _scan_energy(start_dt, end_dt, group_plant_day=True, day_start_hour=hour)
     result["log_file"] = _log_file
     return jsonify(result)
-
 
 @app.route("/api/energy/month.xls")
 def energy_month_xls():
@@ -691,7 +728,6 @@ def energy_month_xls():
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
-
 @app.route("/api/bands")
 def bands_period():
     """On-load / idle / stop seconds from CSV HT kW history for a date-time range."""
@@ -763,7 +799,6 @@ def bands_period():
         "total_kwh": round(on_kwh + idle_kwh, 3),
     })
 
-
 @app.route("/api/history.csv")
 def history_csv():
     start_dt = _parse_dt(request.args.get("start"))
@@ -779,7 +814,6 @@ def history_csv():
     filename = f"pac3200_report_{request.args.get('start', 'all')}_{request.args.get('end', 'all')}.csv".replace(":", "-")
     return Response(buf.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": f"attachment; filename={filename}"})
-
 
 @app.route("/api/log-config", methods=["GET", "POST"])
 def log_config():
@@ -826,7 +860,6 @@ def log_config():
         "error": err,
     })
 
-
 @app.route("/api/data/files")
 def data_files():
     files, err = _list_data_files()
@@ -838,18 +871,21 @@ def data_files():
         "error": err,
     })
 
-
 @app.route("/api/data/export.zip")
 def data_export_zip():
     """Download zip of energy CSV + heats + MES DB from selected folder."""
     os.makedirs(_log_dir, exist_ok=True)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        # Include all dated CSV files (pac3200_log_*.csv)
+        for name in _list_all_log_files():
+            zf.write(name, arcname=os.path.basename(name))
+        # Also include the fixed DATA_FILES (JSONL, SQLite, etc.)
         for name in DATA_FILES:
             path = os.path.join(_log_dir, name)
             if os.path.isfile(path):
                 zf.write(path, arcname=name)
-        # also pack any dated backup CSVs
+        # Also pack any dated backup CSVs (backup_ files)
         try:
             for name in os.listdir(_log_dir):
                 if name.startswith("pac3200_log_backup_") and name.endswith(".csv"):
@@ -870,7 +906,6 @@ def data_export_zip():
         as_attachment=True,
         download_name=f"plant_data_export_{stamp}.zip",
     )
-
 
 @app.route("/api/data/import", methods=["POST"])
 def data_import():
@@ -946,7 +981,6 @@ def data_import():
         "path": path,
     })
 
-
 @app.route("/api/data/download/<path:name>")
 def data_download(name):
     """Download one file from the selected data folder."""
@@ -957,7 +991,6 @@ def data_download(name):
     if not os.path.isfile(path):
         return jsonify({"ok": False, "error": "file not found"}), 404
     return send_file(path, as_attachment=True, download_name=safe)
-
 
 def _prod_path(kind: str) -> str:
     name = {
@@ -970,7 +1003,6 @@ def _prod_path(kind: str) -> str:
         raise ValueError("unknown production kind")
     os.makedirs(_log_dir, exist_ok=True)
     return os.path.join(_log_dir, name)
-
 
 def _read_jsonl(path: str):
     rows = []
@@ -986,7 +1018,6 @@ def _read_jsonl(path: str):
             except Exception:
                 continue
     return rows
-
 
 @app.route("/api/production/reset", methods=["POST"])
 def production_reset():
@@ -1013,7 +1044,6 @@ def production_reset():
         return jsonify({"ok": True, "kind": kind, "files": cleared_files, "sqlite": db_cleared})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
-
 
 @app.route("/api/production/<kind>", methods=["GET", "POST"])
 def production_store(kind):
@@ -1068,8 +1098,6 @@ def production_store(kind):
         rows = filtered
     return jsonify({"ok": True, "path": path, "count": len(rows), "rows": rows})
 
-
-# Serve frontend assets next to the HTML (plant_mis.js, mes_dashboard.js, …)
 @app.route("/<path:asset>")
 def project_assets(asset: str):
     if asset.startswith("api/") or ".." in asset or asset.startswith("/") or "\\" in asset:
@@ -1085,7 +1113,6 @@ def project_assets(asset: str):
         resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         resp.headers["Pragma"] = "no-cache"
     return resp
-
 
 if __name__ == "__main__":
     _load_config()
