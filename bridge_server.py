@@ -26,6 +26,9 @@ from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, Response, send_file, send_from_directory
 from flask_cors import CORS
 
+# Import WhatsApp alert helper
+from whatsapp_alert import send_alert_with_cooldown   # <-- NEW
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
@@ -212,6 +215,45 @@ def _log_row(data, ts):
     with open(jsonl_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(snap, ensure_ascii=False) + "\n")
 
+
+# ──────────────────────────────────────────────────────────────────────────────
+# NEW: Alert checking function
+# ──────────────────────────────────────────────────────────────────────────────
+def check_alerts_and_notify(data):
+    """Evaluate conditions and send WhatsApp alerts if triggered."""
+    try:
+        # 1. Power Factor low
+        pf = float(data.get('Total Power Factor_2') or 0)
+        if pf < 0.85:
+            send_alert_with_cooldown(
+                'pf_low',
+                f"⚠️ ALERT: Power Factor low ({pf:.2f}). Check capacitors.",
+                cooldown_sec=3600  # 1 hour
+            )
+
+        # 2. Miss-roll high (R3 - TMT)
+        r3 = int(data.get('R3_COUNTS') or 0)
+        tmt = int(data.get('TMT_COUNTS') or 0)
+        miss = r3 - tmt
+        if miss > 5:  # adjustable threshold
+            send_alert_with_cooldown(
+                'miss_roll',
+                f"🚨 ALERT: Miss-roll {miss} pcs (R3={r3}, TMT={tmt}). Inspect rolling line.",
+                cooldown_sec=3600
+            )
+
+        # 3. High load (optional)
+        kw = float(data.get('Total Active Power_2') or 0)
+        if kw > 2000:  # example threshold
+            send_alert_with_cooldown(
+                'high_load',
+                f"⚠️ ALERT: High load {kw:.1f} kW. Check equipment.",
+                cooldown_sec=1800
+            )
+    except Exception as e:
+        print(f"[Alert] Error: {e}")
+
+
 def _poll_loop():
     reader = PLCReader()
     error_count = 0
@@ -229,6 +271,8 @@ def _poll_loop():
                 _latest["timestamp"] = ts
                 _latest["plc_ip"] = PLC_IP
                 _latest["billets_ok"] = bool(data.get("_billets_ok"))
+            # Send WhatsApp alerts
+            check_alerts_and_notify(data)    # <-- NEW
             try:
                 mes_set_live(data, connected=True)
             except Exception:
@@ -268,6 +312,7 @@ def _parse_dt(value):
         except ValueError:
             continue
     return None
+
 
 def _read_history(start_dt, end_dt):
     """
